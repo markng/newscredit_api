@@ -1,0 +1,42 @@
+The Almost Universal Microformat Parser
+David P. Janes
+
+Copyright 2005-2008 David P. Janes
+
+*
+Please credit David P. Janes if you use this somewhere.
+
+*
+Python License or New BSD License
+
+*
+If you did not install 'aumfp-all', you must get pybm and install that
+somewhere on your python path. We do not have setup.py files yet!
+
+- http://code.google.com/p/pybm/
+- svn checkout http://pybm.googlecode.com/svn/trunk/ pybm
+
+*
+Do "chmod a+rx index.cgi" if you want to use this a web interface
+
+*
+Each of the microformat python files is runnable, giving as arguments
+the files with HTML downloaded
+
+*
+Parse microformats like following:
+
+parser = hcard.MicroformatHCard(page_uri = <uri_to_page>)
+for d in parser.Iterate():
+	... do stuff with 'd', the pythonic hcard ...
+
+*
+Having "tidy" on your path really helps
+http://tidy.sourceforge.net/
+
+** We strongly suggest you build from CVS source if on Linux **
+
+*
+This version produces _tremendous_ amounts of logging. You may
+want to modify GenericLog to ignore all non-exceptions.
+
