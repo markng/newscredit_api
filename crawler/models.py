@@ -16,7 +16,7 @@ class CrawlSite(models.Model):
   def crawl(self):
     #if we have no feed pages, add the actual url of the site itself
     if len(self.feed_pages.all()) < 1:
-      feedpage = models.get_model(FeedPage)
+      feedpage = self.feed_pages.model()
       feedpage.url = self.url
       self.feed_pages.add(feedpage)
       return feedpage.fetch()
@@ -31,13 +31,15 @@ databrowse.site.register(CrawlSite)
 class Article(models.Model):
   """article"""
   bookmark = models.URLField("Article permalink", unique=True)
-  entry_title = models.TextField("Title")
+  entry_title = models.TextField("Title", null=True, blank=True)
   entry_content = models.TextField("Content", null=True, blank=True)
-  entry_summary = models.TextField("Summary")
+  entry_summary = models.TextField("Summary", null=True, blank=True)
   updated = models.DateTimeField("Last Updated", null=True, blank=True)
   published = models.DateTimeField("First Published", null=True, blank=True)
-  principles = models.URLField("Statement of Principles", null=True, blank=True)
   tags = TagField()
+  def __unicode__(self):
+    """string rep"""
+    return(self.entry_title)
   def set_tags(self, tags):
     Tag.objects.update_tags(self, tags)
   def get_tags(self):
@@ -59,7 +61,11 @@ class FeedPage(models.Model):
     # create articles and/or revision from results
     for result in results:
       pprint.pprint(result)
-      #article, created = Article.objects.get_or_create(bookmark=article.)
+      article, created = Article.objects.get_or_create(bookmark=result.get('bookmark'))
+      article.entry_title = result.get('entry-title')
+      article.entry_content = result.get('entry-content')
+      article.entry_summary = result.get('entry-summary')
+      article.save()
     return True
 admin.site.register(FeedPage)
 databrowse.site.register(FeedPage)
@@ -81,6 +87,13 @@ class WorkedOn(models.Model):
   class Meta:
     verbose_name = 'worked on (article <-> author)'
     verbose_name_plural = 'worked on (article <-> author)'
+
+class Principles(models.Model):
+  """principles"""
+  url = models.URLField(unique=True)
+  articles = models.ManyToManyField(Article, related_name='principles')
+  class Meta:
+    verbose_name_plural = 'Principles'
   
 class Revision(models.Model):
   """revision of article"""
