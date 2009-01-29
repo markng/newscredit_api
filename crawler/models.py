@@ -1,5 +1,9 @@
 from django.db import models
-from django.contrib import admin
+from django.contrib import admin, databrowse
+from newscredit_store.locallibs.aump import hall, hatom
+from tagging.fields import TagField
+from tagging.models import Tag
+import pprint
 
 # Create your models here.
 class CrawlSite(models.Model):
@@ -9,12 +13,20 @@ class CrawlSite(models.Model):
   def __unicode__(self):
     """string rep"""
     return self.url
+  def crawl(self):
+    #if we have no feed pages, add the actual url of the site itself
+    if len(self.feed_pages.all()) < 1:
+      feedpage = models.get_model(FeedPage)
+      feedpage.url = self.url
+      self.feed_pages.add(feedpage)
+      return feedpage.fetch()
+    else:
+      results=[]
+      for page in self.feed_pages.all():
+        results.append(page.fetch())
+      return results
 admin.site.register(CrawlSite)
-
-class FeedPages(models.Model):
-  """pages which are either atom feeds or hatom pages"""
-  url = models.URLField("Feed URL")
-  crawl_site = models.ForeignKey(CrawlSite)
+databrowse.site.register(CrawlSite)
 
 class Article(models.Model):
   """article"""
@@ -24,7 +36,33 @@ class Article(models.Model):
   entry_summary = models.TextField("Summary")
   updated = models.DateTimeField("Last Updated", null=True, blank=True)
   published = models.DateTimeField("First Published", null=True, blank=True)
+  principles = models.URLField("Statement of Principles", null=True, blank=True)
+  tags = TagField()
+  def set_tags(self, tags):
+    Tag.objects.update_tags(self, tags)
+  def get_tags(self):
+    return Tag.objects.get_for_object(self)
 admin.site.register(Article)
+databrowse.site.register(Article)
+
+class FeedPage(models.Model):
+  """pages which are either atom feeds or hatom pages"""
+  url = models.URLField("Feed URL")
+  crawl_site = models.ForeignKey(CrawlSite, related_name='feed_pages')
+  def __unicode__(self):
+    """string rep"""
+    return self.url
+  def fetch(self):
+    """fetch feed and parse it"""
+    parser = hatom.MicroformatHAtom(page_uri=self.url)
+    results = [result for result in parser.Iterate()]
+    # create articles and/or revision from results
+    for result in results:
+      pprint.pprint(result)
+      article, created = Article.objects.get_or_create(bookmark=article.)
+    return True
+admin.site.register(FeedPage)
+databrowse.site.register(FeedPage)
 
 class Author(models.Model):
   """article author"""
@@ -33,6 +71,7 @@ class Author(models.Model):
   url = models.URLField("Author page")
   articles = models.ManyToManyField(Article, related_name='authors', through='WorkedOn')
 admin.site.register(Author)
+databrowse.site.register(Author)
 
 class WorkedOn(models.Model):
   """relationship between articles and authors"""
@@ -42,7 +81,6 @@ class WorkedOn(models.Model):
   class Meta:
     verbose_name = 'worked on (article <-> author)'
     verbose_name_plural = 'worked on (article <-> author)'
-admin.site.register(WorkedOn)
   
 class Revision(models.Model):
   """revision of article"""
@@ -52,4 +90,3 @@ class Revision(models.Model):
   entry_content = models.TextField("Content", null=True, blank=True)
   entry_summary = models.TextField("Summary")
 admin.site.register(Revision)
-
