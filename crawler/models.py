@@ -59,7 +59,7 @@ class FeedPage(models.Model):
     # create articles and/or revision from results
     for result in results:
       pprint.pprint(result)
-      article, created = Article.objects.get_or_create(bookmark=article.)
+      #article, created = Article.objects.get_or_create(bookmark=article.)
     return True
 admin.site.register(FeedPage)
 databrowse.site.register(FeedPage)
