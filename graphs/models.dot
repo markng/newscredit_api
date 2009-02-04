@@ -568,10 +568,10 @@ subgraph cluster_newscredit_store_crawler_models {
         ></TD></TR>
         
         <TR><TD ALIGN="LEFT" BORDER="0"
-        ><FONT FACE="Helvetica Bold">entry_title</FONT
+        ><FONT COLOR="#7B7B7B" FACE="Helvetica Bold">entry_title</FONT
         ></TD>
         <TD ALIGN="LEFT"
-        ><FONT FACE="Helvetica Bold">TextField</FONT
+        ><FONT COLOR="#7B7B7B" FACE="Helvetica Bold">TextField</FONT
         ></TD></TR>
         
         <TR><TD ALIGN="LEFT" BORDER="0"
@@ -582,10 +582,10 @@ subgraph cluster_newscredit_store_crawler_models {
         ></TD></TR>
         
         <TR><TD ALIGN="LEFT" BORDER="0"
-        ><FONT FACE="Helvetica Bold">entry_summary</FONT
+        ><FONT COLOR="#7B7B7B" FACE="Helvetica Bold">entry_summary</FONT
         ></TD>
         <TD ALIGN="LEFT"
-        ><FONT FACE="Helvetica Bold">TextField</FONT
+        ><FONT COLOR="#7B7B7B" FACE="Helvetica Bold">TextField</FONT
         ></TD></TR>
         
         <TR><TD ALIGN="LEFT" BORDER="0"
@@ -600,13 +600,6 @@ subgraph cluster_newscredit_store_crawler_models {
         ></TD>
         <TD ALIGN="LEFT"
         ><FONT COLOR="#7B7B7B" FACE="Helvetica Bold">DateTimeField</FONT
-        ></TD></TR>
-        
-        <TR><TD ALIGN="LEFT" BORDER="0"
-        ><FONT COLOR="#7B7B7B" FACE="Helvetica Bold">principles</FONT
-        ></TD>
-        <TD ALIGN="LEFT"
-        ><FONT COLOR="#7B7B7B" FACE="Helvetica Bold">URLField</FONT
         ></TD></TR>
         
         <TR><TD ALIGN="LEFT" BORDER="0"
@@ -734,6 +727,39 @@ subgraph cluster_newscredit_store_crawler_models {
         ></TD>
         <TD ALIGN="LEFT"
         ><FONT COLOR="#7B7B7B" FACE="Helvetica Bold">TextField</FONT
+        ></TD></TR>
+        
+    
+    </TABLE>
+    >]
+  
+    newscredit_store_crawler_models_Principles [label=<
+    <TABLE BGCOLOR="palegoldenrod" BORDER="0" CELLBORDER="0" CELLSPACING="0">
+     <TR><TD COLSPAN="2" CELLPADDING="4" ALIGN="CENTER" BGCOLOR="olivedrab4"
+     ><FONT FACE="Helvetica Bold" COLOR="white"
+     >Principles</FONT></TD></TR>
+
+    
+        
+        <TR><TD ALIGN="LEFT" BORDER="0"
+        ><FONT COLOR="#7B7B7B" FACE="Helvetica Bold">id</FONT
+        ></TD>
+        <TD ALIGN="LEFT"
+        ><FONT COLOR="#7B7B7B" FACE="Helvetica Bold">AutoField</FONT
+        ></TD></TR>
+        
+        <TR><TD ALIGN="LEFT" BORDER="0"
+        ><FONT FACE="Helvetica Bold">url</FONT
+        ></TD>
+        <TD ALIGN="LEFT"
+        ><FONT FACE="Helvetica Bold">URLField</FONT
+        ></TD></TR>
+        
+        <TR><TD ALIGN="LEFT" BORDER="0"
+        ><FONT FACE="Helvetica Bold">articles</FONT
+        ></TD>
+        <TD ALIGN="LEFT"
+        ><FONT FACE="Helvetica Bold">ManyToManyField</FONT
         ></TD></TR>
         
     
@@ -1063,6 +1089,12 @@ subgraph cluster_django_evolution_models {
     
     newscredit_store_crawler_models_WorkedOn -> newscredit_store_crawler_models_Article
     [label="article"] ;
+    
+  
+    
+    
+    newscredit_store_crawler_models_Principles -> newscredit_store_crawler_models_Article
+    [label="articles"] [arrowhead=normal arrowtail=normal];
     
   
     
