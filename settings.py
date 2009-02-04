@@ -79,6 +79,7 @@ INSTALLED_APPS = (
   'django.contrib.admin',
   'django.contrib.databrowse',
   'newscredit_store.crawler',
+  'tagging',
   'extensions',
   'django_evolution',
 )
