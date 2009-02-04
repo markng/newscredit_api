@@ -2,8 +2,12 @@ from django.db import models
 from django.contrib import admin, databrowse
 from newscredit_store.locallibs.aump import hall, hatom
 from tagging.fields import TagField
-from tagging.models import Tag
+from tagging.models import Tag, TaggedItem
+from datetime import datetime
 import pprint
+
+#browse tags
+databrowse.site.register(Tag)
 
 # Create your models here.
 class CrawlSite(models.Model):
@@ -19,12 +23,13 @@ class CrawlSite(models.Model):
       feedpage = self.feed_pages.model()
       feedpage.url = self.url
       self.feed_pages.add(feedpage)
-      return feedpage.fetch()
+      feedpage.fetch()
+      return True
     else:
       results=[]
       for page in self.feed_pages.all():
         results.append(page.fetch())
-      return results
+      return True
 admin.site.register(CrawlSite)
 databrowse.site.register(CrawlSite)
 
@@ -37,13 +42,10 @@ class Article(models.Model):
   updated = models.DateTimeField("Last Updated", null=True, blank=True)
   published = models.DateTimeField("First Published", null=True, blank=True)
   tags = TagField()
+  tag_models = generic.GenericRelation(TaggedItem)
   def __unicode__(self):
     """string rep"""
     return(self.entry_title)
-  def set_tags(self, tags):
-    Tag.objects.update_tags(self, tags)
-  def get_tags(self):
-    return Tag.objects.get_for_object(self)
 admin.site.register(Article)
 databrowse.site.register(Article)
 
@@ -65,6 +67,16 @@ class FeedPage(models.Model):
       article.entry_title = result.get('entry-title')
       article.entry_content = result.get('entry-content')
       article.entry_summary = result.get('entry-summary')
+      article.tags = reduce(lambda x, y: x + ',' + y, [tag.get('name') for tag in result.get('tag')]).lower()
+      try:
+        article.published = datetime.strptime(result.get('published'), "%Y-%m-%dT%H:%M:%SZ")
+      except Exception, e:
+        article.published = datetime.now()
+      try:
+        article.updated = datetime.strptime(result.get('updated'), "%Y-%m-%dT%H:%M:%SZ")
+      except Exception, e:
+        # TODO : some better logic here, that checks if the article has been updated
+        article.updated = datetime.now()
       article.save()
     return True
 admin.site.register(FeedPage)
@@ -94,6 +106,8 @@ class Principles(models.Model):
   articles = models.ManyToManyField(Article, related_name='principles')
   class Meta:
     verbose_name_plural = 'Principles'
+admin.site.register(Principles)
+databrowse.site.register(Principles)
   
 class Revision(models.Model):
   """revision of article"""
