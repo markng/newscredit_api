@@ -4,6 +4,7 @@ from newscredit_store.locallibs.aump import hall, hatom
 from tagging.fields import TagField
 from tagging.models import Tag, TaggedItem
 from datetime import datetime
+from django.contrib.contenttypes import generic
 import pprint
 
 #browse tags
@@ -12,7 +13,7 @@ databrowse.site.register(Tag)
 # Create your models here.
 class CrawlSite(models.Model):
   """site from which we are crawling"""
-  url = models.URLField("Site URL")
+  url = models.URLField("Site URL", unique=True)
   name = models.TextField("Site Name", null=True, blank=True)
   def __unicode__(self):
     """string rep"""
@@ -33,25 +34,9 @@ class CrawlSite(models.Model):
 admin.site.register(CrawlSite)
 databrowse.site.register(CrawlSite)
 
-class Article(models.Model):
-  """article"""
-  bookmark = models.URLField("Article permalink", unique=True)
-  entry_title = models.TextField("Title", null=True, blank=True)
-  entry_content = models.TextField("Content", null=True, blank=True)
-  entry_summary = models.TextField("Summary", null=True, blank=True)
-  updated = models.DateTimeField("Last Updated", null=True, blank=True)
-  published = models.DateTimeField("First Published", null=True, blank=True)
-  tags = TagField()
-  tag_models = generic.GenericRelation(TaggedItem)
-  def __unicode__(self):
-    """string rep"""
-    return(self.entry_title)
-admin.site.register(Article)
-databrowse.site.register(Article)
-
 class FeedPage(models.Model):
   """pages which are either atom feeds or hatom pages"""
-  url = models.URLField("Feed URL")
+  url = models.URLField("Feed URL", db_index=True)
   crawl_site = models.ForeignKey(CrawlSite, related_name='feed_pages')
   def __unicode__(self):
     """string rep"""
@@ -82,20 +67,52 @@ class FeedPage(models.Model):
 admin.site.register(FeedPage)
 databrowse.site.register(FeedPage)
 
+class Article(models.Model):
+  """article"""
+  bookmark = models.URLField("Article permalink", unique=True)
+  entry_title = models.TextField("Title", null=True, blank=True)
+  entry_content = models.TextField("Content", null=True, blank=True)
+  entry_summary = models.TextField("Summary", null=True, blank=True)
+  updated = models.DateTimeField("Last Updated", null=True, blank=True, db_index=True)
+  published = models.DateTimeField("First Published", null=True, blank=True, db_index=True)
+  feedpages = models.ManyToManyField(FeedPage, through='FeedPageArticle')
+  tags = TagField()
+  tag_models = generic.GenericRelation(TaggedItem)
+  def __unicode__(self):
+    """string rep"""
+    return(self.entry_title)
+admin.site.register(Article)
+databrowse.site.register(Article)
+
+class FeedPageArticle(models.Model):
+  """relationship between Article and FeedPage"""
+  feedpage = models.ForeignKey(FeedPage)
+  article = models.ForeignKey(Article)
+
 class Author(models.Model):
   """article author"""
-  fn = models.TextField("formatted name")
-  nickname = models.TextField("nickname", blank=True, null=True)
-  url = models.URLField("Author page")
+  url = models.URLField("Author page", unique=True)
   articles = models.ManyToManyField(Article, related_name='authors', through='WorkedOn')
 admin.site.register(Author)
 databrowse.site.register(Author)
 
+class Name(models.Model):
+  """names for people"""
+  fn = models.TextField("formatted name")
+  authors = models.ManyToManyField(Author, related_name='names', through='AuthorName')
+  
+class AuthorName(models.Model):
+  """author url to name relationship"""
+  author = models.ForeignKey(Author, db_index=True)
+  name = models.ForeignKey(Name, db_index=True)
+  # articles and count links so we can keep a count of the popular names for a user to create canonical
+  articles = models.ManyToManyField(Article, blank=True, null=True)
+
 class WorkedOn(models.Model):
   """relationship between articles and authors"""
-  author = models.ForeignKey(Author)
-  article = models.ForeignKey(Article)
-  role = models.TextField(null=True, blank=True)
+  author = models.ForeignKey(Author, db_index=True)
+  article = models.ForeignKey(Article, db_index=True)
+  role = models.TextField(null=True, blank=True, db_index=True)
   class Meta:
     verbose_name = 'worked on (article <-> author)'
     verbose_name_plural = 'worked on (article <-> author)'

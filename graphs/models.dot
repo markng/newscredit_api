@@ -545,6 +545,39 @@ subgraph cluster_newscredit_store_crawler_models {
     </TABLE>
     >]
   
+    newscredit_store_crawler_models_FeedPage [label=<
+    <TABLE BGCOLOR="palegoldenrod" BORDER="0" CELLBORDER="0" CELLSPACING="0">
+     <TR><TD COLSPAN="2" CELLPADDING="4" ALIGN="CENTER" BGCOLOR="olivedrab4"
+     ><FONT FACE="Helvetica Bold" COLOR="white"
+     >FeedPage</FONT></TD></TR>
+
+    
+        
+        <TR><TD ALIGN="LEFT" BORDER="0"
+        ><FONT COLOR="#7B7B7B" FACE="Helvetica Bold">id</FONT
+        ></TD>
+        <TD ALIGN="LEFT"
+        ><FONT COLOR="#7B7B7B" FACE="Helvetica Bold">AutoField</FONT
+        ></TD></TR>
+        
+        <TR><TD ALIGN="LEFT" BORDER="0"
+        ><FONT FACE="Helvetica Bold">url</FONT
+        ></TD>
+        <TD ALIGN="LEFT"
+        ><FONT FACE="Helvetica Bold">URLField</FONT
+        ></TD></TR>
+        
+        <TR><TD ALIGN="LEFT" BORDER="0"
+        ><FONT FACE="Helvetica Bold">crawl_site</FONT
+        ></TD>
+        <TD ALIGN="LEFT"
+        ><FONT FACE="Helvetica Bold">ForeignKey</FONT
+        ></TD></TR>
+        
+    
+    </TABLE>
+    >]
+  
     newscredit_store_crawler_models_Article [label=<
     <TABLE BGCOLOR="palegoldenrod" BORDER="0" CELLBORDER="0" CELLSPACING="0">
      <TR><TD COLSPAN="2" CELLPADDING="4" ALIGN="CENTER" BGCOLOR="olivedrab4"
@@ -609,15 +642,29 @@ subgraph cluster_newscredit_store_crawler_models {
         ><FONT COLOR="#7B7B7B" FACE="Helvetica Bold">TagField</FONT
         ></TD></TR>
         
+        <TR><TD ALIGN="LEFT" BORDER="0"
+        ><FONT FACE="Helvetica Bold">feedpages</FONT
+        ></TD>
+        <TD ALIGN="LEFT"
+        ><FONT FACE="Helvetica Bold">ManyToManyField</FONT
+        ></TD></TR>
+        
+        <TR><TD ALIGN="LEFT" BORDER="0"
+        ><FONT COLOR="#7B7B7B" FACE="Helvetica Bold">tag_models</FONT
+        ></TD>
+        <TD ALIGN="LEFT"
+        ><FONT COLOR="#7B7B7B" FACE="Helvetica Bold">GenericRelation</FONT
+        ></TD></TR>
+        
     
     </TABLE>
     >]
   
-    newscredit_store_crawler_models_FeedPage [label=<
+    newscredit_store_crawler_models_FeedPageArticle [label=<
     <TABLE BGCOLOR="palegoldenrod" BORDER="0" CELLBORDER="0" CELLSPACING="0">
      <TR><TD COLSPAN="2" CELLPADDING="4" ALIGN="CENTER" BGCOLOR="olivedrab4"
      ><FONT FACE="Helvetica Bold" COLOR="white"
-     >FeedPage</FONT></TD></TR>
+     >FeedPageArticle</FONT></TD></TR>
 
     
         
@@ -629,14 +676,14 @@ subgraph cluster_newscredit_store_crawler_models {
         ></TD></TR>
         
         <TR><TD ALIGN="LEFT" BORDER="0"
-        ><FONT FACE="Helvetica Bold">url</FONT
+        ><FONT FACE="Helvetica Bold">feedpage</FONT
         ></TD>
         <TD ALIGN="LEFT"
-        ><FONT FACE="Helvetica Bold">URLField</FONT
+        ><FONT FACE="Helvetica Bold">ForeignKey</FONT
         ></TD></TR>
         
         <TR><TD ALIGN="LEFT" BORDER="0"
-        ><FONT FACE="Helvetica Bold">crawl_site</FONT
+        ><FONT FACE="Helvetica Bold">article</FONT
         ></TD>
         <TD ALIGN="LEFT"
         ><FONT FACE="Helvetica Bold">ForeignKey</FONT
@@ -662,20 +709,6 @@ subgraph cluster_newscredit_store_crawler_models {
         ></TD></TR>
         
         <TR><TD ALIGN="LEFT" BORDER="0"
-        ><FONT FACE="Helvetica Bold">fn</FONT
-        ></TD>
-        <TD ALIGN="LEFT"
-        ><FONT FACE="Helvetica Bold">TextField</FONT
-        ></TD></TR>
-        
-        <TR><TD ALIGN="LEFT" BORDER="0"
-        ><FONT COLOR="#7B7B7B" FACE="Helvetica Bold">nickname</FONT
-        ></TD>
-        <TD ALIGN="LEFT"
-        ><FONT COLOR="#7B7B7B" FACE="Helvetica Bold">TextField</FONT
-        ></TD></TR>
-        
-        <TR><TD ALIGN="LEFT" BORDER="0"
         ><FONT FACE="Helvetica Bold">url</FONT
         ></TD>
         <TD ALIGN="LEFT"
@@ -687,6 +720,79 @@ subgraph cluster_newscredit_store_crawler_models {
         ></TD>
         <TD ALIGN="LEFT"
         ><FONT FACE="Helvetica Bold">ManyToManyField</FONT
+        ></TD></TR>
+        
+    
+    </TABLE>
+    >]
+  
+    newscredit_store_crawler_models_Name [label=<
+    <TABLE BGCOLOR="palegoldenrod" BORDER="0" CELLBORDER="0" CELLSPACING="0">
+     <TR><TD COLSPAN="2" CELLPADDING="4" ALIGN="CENTER" BGCOLOR="olivedrab4"
+     ><FONT FACE="Helvetica Bold" COLOR="white"
+     >Name</FONT></TD></TR>
+
+    
+        
+        <TR><TD ALIGN="LEFT" BORDER="0"
+        ><FONT COLOR="#7B7B7B" FACE="Helvetica Bold">id</FONT
+        ></TD>
+        <TD ALIGN="LEFT"
+        ><FONT COLOR="#7B7B7B" FACE="Helvetica Bold">AutoField</FONT
+        ></TD></TR>
+        
+        <TR><TD ALIGN="LEFT" BORDER="0"
+        ><FONT FACE="Helvetica Bold">fn</FONT
+        ></TD>
+        <TD ALIGN="LEFT"
+        ><FONT FACE="Helvetica Bold">TextField</FONT
+        ></TD></TR>
+        
+        <TR><TD ALIGN="LEFT" BORDER="0"
+        ><FONT FACE="Helvetica Bold">authors</FONT
+        ></TD>
+        <TD ALIGN="LEFT"
+        ><FONT FACE="Helvetica Bold">ManyToManyField</FONT
+        ></TD></TR>
+        
+    
+    </TABLE>
+    >]
+  
+    newscredit_store_crawler_models_AuthorName [label=<
+    <TABLE BGCOLOR="palegoldenrod" BORDER="0" CELLBORDER="0" CELLSPACING="0">
+     <TR><TD COLSPAN="2" CELLPADDING="4" ALIGN="CENTER" BGCOLOR="olivedrab4"
+     ><FONT FACE="Helvetica Bold" COLOR="white"
+     >AuthorName</FONT></TD></TR>
+
+    
+        
+        <TR><TD ALIGN="LEFT" BORDER="0"
+        ><FONT COLOR="#7B7B7B" FACE="Helvetica Bold">id</FONT
+        ></TD>
+        <TD ALIGN="LEFT"
+        ><FONT COLOR="#7B7B7B" FACE="Helvetica Bold">AutoField</FONT
+        ></TD></TR>
+        
+        <TR><TD ALIGN="LEFT" BORDER="0"
+        ><FONT FACE="Helvetica Bold">author</FONT
+        ></TD>
+        <TD ALIGN="LEFT"
+        ><FONT FACE="Helvetica Bold">ForeignKey</FONT
+        ></TD></TR>
+        
+        <TR><TD ALIGN="LEFT" BORDER="0"
+        ><FONT FACE="Helvetica Bold">name</FONT
+        ></TD>
+        <TD ALIGN="LEFT"
+        ><FONT FACE="Helvetica Bold">ForeignKey</FONT
+        ></TD></TR>
+        
+        <TR><TD ALIGN="LEFT" BORDER="0"
+        ><FONT COLOR="#7B7B7B" FACE="Helvetica Bold">articles</FONT
+        ></TD>
+        <TD ALIGN="LEFT"
+        ><FONT COLOR="#7B7B7B" FACE="Helvetica Bold">ManyToManyField</FONT
         ></TD></TR>
         
     
@@ -1068,8 +1174,6 @@ subgraph cluster_django_evolution_models {
     
   
     
-  
-    
     
     newscredit_store_crawler_models_FeedPage -> newscredit_store_crawler_models_CrawlSite
     [label="crawl_site"] ;
@@ -1077,7 +1181,47 @@ subgraph cluster_django_evolution_models {
   
     
     
+    newscredit_store_crawler_models_Article -> newscredit_store_crawler_models_FeedPage
+    [label="feedpages"] [arrowhead=normal arrowtail=normal];
+    
+    
+    newscredit_store_crawler_models_Article -> tagging_models_TaggedItem
+    [label="tag_models"] [style="dotted"] [arrowhead=normal arrowtail=normal];
+    
+  
+    
+    
+    newscredit_store_crawler_models_FeedPageArticle -> newscredit_store_crawler_models_FeedPage
+    [label="feedpage"] ;
+    
+    
+    newscredit_store_crawler_models_FeedPageArticle -> newscredit_store_crawler_models_Article
+    [label="article"] ;
+    
+  
+    
+    
     newscredit_store_crawler_models_Author -> newscredit_store_crawler_models_Article
+    [label="articles"] [arrowhead=normal arrowtail=normal];
+    
+  
+    
+    
+    newscredit_store_crawler_models_Name -> newscredit_store_crawler_models_Author
+    [label="authors"] [arrowhead=normal arrowtail=normal];
+    
+  
+    
+    
+    newscredit_store_crawler_models_AuthorName -> newscredit_store_crawler_models_Author
+    [label="author"] ;
+    
+    
+    newscredit_store_crawler_models_AuthorName -> newscredit_store_crawler_models_Name
+    [label="name"] ;
+    
+    
+    newscredit_store_crawler_models_AuthorName -> newscredit_store_crawler_models_Article
     [label="articles"] [arrowhead=normal arrowtail=normal];
     
   
