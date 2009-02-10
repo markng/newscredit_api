@@ -3,7 +3,7 @@ from django.contrib import admin, databrowse
 from newscredit_store.locallibs.aump import hall, hatom
 from tagging.fields import TagField
 from tagging.models import Tag, TaggedItem
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.contrib.contenttypes import generic
 import pprint
 
@@ -34,15 +34,28 @@ class CrawlSite(models.Model):
 admin.site.register(CrawlSite)
 databrowse.site.register(CrawlSite)
 
+class FeedPageManager(models.Manager):
+  """manager for feed pages"""
+  def get_due_pages(self):
+    """get pages due for refresh"""
+    return self.exclude(refresh_at__gt=datetime.now())
+
 class FeedPage(models.Model):
   """pages which are either atom feeds or hatom pages"""
   url = models.URLField("Feed URL", db_index=True)
   crawl_site = models.ForeignKey(CrawlSite, related_name='feed_pages')
+  updated_at = models.DateTimeField(null=True, blank=True)
+  refresh_minutes = models.IntegerField(help_text="How many minutes to wait before refreshing this page", default=120)
+  refresh_at = models.DateTimeField(null=True, blank=True)
+  objects = FeedPageManager()
   def __unicode__(self):
     """string rep"""
     return self.url
   def fetch(self):
     """fetch feed and parse it"""
+    self.updated_at = datetime.now()
+    self.refresh_at = datetime.now() + timedelta(minutes=self.refresh_minutes)
+    self.save()
     parser = hatom.MicroformatHAtom(page_uri=self.url)
     results = [result for result in parser.Iterate()]
     # create articles and/or revision from results
@@ -53,6 +66,7 @@ class FeedPage(models.Model):
       article.entry_content = result.get('entry-content')
       article.entry_summary = result.get('entry-summary')
       article.tags = reduce(lambda x, y: x + ',' + y, [tag.get('name') for tag in result.get('tag')]).lower()
+      
       try:
         article.published = datetime.strptime(result.get('published'), "%Y-%m-%dT%H:%M:%SZ")
       except Exception, e:
@@ -103,8 +117,8 @@ class Name(models.Model):
   
 class AuthorName(models.Model):
   """author url to name relationship"""
-  author = models.ForeignKey(Author, db_index=True)
-  name = models.ForeignKey(Name, db_index=True)
+  author = models.ForeignKey(Author, db_index=True, blank=True, null=True)
+  name = models.ForeignKey(Name, db_index=True, blank=True, null=True)
   # articles and count links so we can keep a count of the popular names for a user to create canonical
   articles = models.ManyToManyField(Article, blank=True, null=True)
 
