@@ -5,7 +5,9 @@ from tagging.fields import TagField
 from tagging.models import Tag, TaggedItem
 from datetime import datetime, timedelta
 from django.contrib.contenttypes import generic
-import pprint
+from BeautifulSoup import BeautifulSoup
+from lxml.html.clean import clean_html
+import pprint, urllib2, re
 
 #browse tags
 databrowse.site.register(Tag)
@@ -18,6 +20,13 @@ class CrawlSite(models.Model):
   def __unicode__(self):
     """string rep"""
     return self.url
+  def save(self):
+    """overridden save"""
+    super(CrawlSite, self).save()
+    if len(self.feed_pages.all()) < 1:
+      feedpage = self.feed_pages.model()
+      feedpage.url = self.url
+      self.feed_pages.add(feedpage)
   def crawl(self):
     #if we have no feed pages, add the actual url of the site itself
     if len(self.feed_pages.all()) < 1:
@@ -56,26 +65,22 @@ class FeedPage(models.Model):
     self.updated_at = datetime.now()
     self.refresh_at = datetime.now() + timedelta(minutes=self.refresh_minutes)
     self.save()
-    parser = hatom.MicroformatHAtom(page_uri=self.url)
-    results = [result for result in parser.Iterate()]
+    html = urllib2.urlopen(self.url).read()
+    try:
+      parser = hatom.MicroformatHAtom()
+      parser.feed(html)
+      results = [result for result in parser.Iterate()]
+    except Exception, e:
+      # try stripping out only the hentry elements if the original parse fails
+      parser = hatom.MicroformatHAtom()
+      soup = BeautifulSoup(html)
+      striphtml = reduce(lambda x,y: x + y, [entry.prettify() for entry in soup.findAll(True,{"class" : re.compile("hentry")})])
+      parser.Feed(striphtml)
+      results = [result for result in parser.Iterate()]        
     # create articles and/or revision from results
     for result in results:
-      pprint.pprint(result)
       article, created = Article.objects.get_or_create(bookmark=result.get('bookmark'))
-      article.entry_title = result.get('entry-title')
-      article.entry_content = result.get('entry-content')
-      article.entry_summary = result.get('entry-summary')
-      article.tags = reduce(lambda x, y: x + ',' + y, [tag.get('name') for tag in result.get('tag')]).lower()
-      
-      try:
-        article.published = datetime.strptime(result.get('published'), "%Y-%m-%dT%H:%M:%SZ")
-      except Exception, e:
-        article.published = datetime.now()
-      try:
-        article.updated = datetime.strptime(result.get('updated'), "%Y-%m-%dT%H:%M:%SZ")
-      except Exception, e:
-        # TODO : some better logic here, that checks if the article has been updated
-        article.updated = datetime.now()
+      article.from_hatom_parsed(result)
       article.save()
     return True
 admin.site.register(FeedPage)
@@ -95,6 +100,31 @@ class Article(models.Model):
   def __unicode__(self):
     """string rep"""
     return(self.entry_title)
+  def from_hatom_parsed(self, result):
+    """from a hatom parsed item"""
+    self.entry_title = result.get('entry-title')
+    self.entry_content = result.get('entry-content')
+    self.entry_summary = result.get('entry-summary')
+    self.tags = reduce(lambda x, y: x + ',' + y, [tag.get('name') for tag in result.get('tag')]).lower()
+    if result.get('author') and len(result.get('author')) > 0:
+      for parsedauthor in result.get('author'):
+        if parsedauthor.get('url'):
+          author, created = Author.objects.get_or_create(url=parsedauthor.get('url'))
+          author.link_to_article_from_hcard(self,parsedauthor)
+        else:
+          name, created = Name.objects.get_or_create(fn=parsedauthor.get('fn'))
+          name.articles.add(self)
+          name.save()
+    try:
+      self.published = datetime.strptime(result.get('published'), "%Y-%m-%dT%H:%M:%SZ")
+    except Exception, e:
+      self.published = datetime.now()
+    try:
+      self.updated = datetime.strptime(result.get('updated'), "%Y-%m-%dT%H:%M:%SZ")
+    except Exception, e:
+      # TODO : some better logic here, that checks if the article has been updated
+      self.updated = datetime.now()
+    return True
 admin.site.register(Article)
 databrowse.site.register(Article)
 
@@ -102,11 +132,30 @@ class FeedPageArticle(models.Model):
   """relationship between Article and FeedPage"""
   feedpage = models.ForeignKey(FeedPage)
   article = models.ForeignKey(Article)
+  def __unicode__(self):
+    """string rep"""
+    return "%s : %s" % (self.feedpage, self.article)
 
 class Author(models.Model):
   """article author"""
   url = models.URLField("Author page", unique=True)
   articles = models.ManyToManyField(Article, related_name='authors', through='WorkedOn')
+  def __unicode__(self):
+    """string rep"""
+    return self.url
+  def link_to_article_from_hcard(self, article, hcard):
+    """from a hcard parsed item"""
+    worked_on, created = WorkedOn.objects.get_or_create(author=self, article=article)
+    worked_on.role = hcard.get('role', 'author') #default to author if no role provided
+    worked_on.save()
+    name, created = Name.objects.get_or_create(fn=hcard.get('fn'))
+    name.articles.add(article)
+    name.save()
+    author_name, created = AuthorName.objects.get_or_create(name=name, author=self)
+    author_name.author = self
+    author_name.name = name
+    author_name.articles.add(article)
+    author_name.save()
 admin.site.register(Author)
 databrowse.site.register(Author)
 
@@ -114,13 +163,20 @@ class Name(models.Model):
   """names for people"""
   fn = models.TextField("formatted name")
   authors = models.ManyToManyField(Author, related_name='names', through='AuthorName')
+  articles = models.ManyToManyField(Article, related_name='names')
+  def __unicode__(self):
+    """string rep"""
+    return fn
   
 class AuthorName(models.Model):
   """author url to name relationship"""
-  author = models.ForeignKey(Author, db_index=True, blank=True, null=True)
-  name = models.ForeignKey(Name, db_index=True, blank=True, null=True)
+  author = models.ForeignKey(Author, db_index=True, blank=True, null=True, related_name='authornames')
+  name = models.ForeignKey(Name, db_index=True, blank=True, null=True, related_name='authornames')
   # articles and count links so we can keep a count of the popular names for a user to create canonical
   articles = models.ManyToManyField(Article, blank=True, null=True)
+  def __unicode__(self):
+    """string rep"""
+    return "%s : %s" % (self.author, self.name)
 
 class WorkedOn(models.Model):
   """relationship between articles and authors"""
@@ -130,6 +186,9 @@ class WorkedOn(models.Model):
   class Meta:
     verbose_name = 'worked on (article <-> author)'
     verbose_name_plural = 'worked on (article <-> author)'
+  def __unicode__(self):
+    """string rep"""
+    return "%s : %s" % (self.author, self.article)
 
 class Principles(models.Model):
   """principles"""
@@ -137,6 +196,9 @@ class Principles(models.Model):
   articles = models.ManyToManyField(Article, related_name='principles')
   class Meta:
     verbose_name_plural = 'Principles'
+  def __unicode__(self):
+    """string rep"""
+    return self.url
 admin.site.register(Principles)
 databrowse.site.register(Principles)
   
