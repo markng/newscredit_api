@@ -6,8 +6,7 @@ from tagging.models import Tag, TaggedItem
 from datetime import datetime, timedelta
 from django.contrib.contenttypes import generic
 from BeautifulSoup import BeautifulSoup
-from lxml.html.clean import clean_html
-import pprint, urllib2, re
+import pprint, urllib2, re, os
 
 #browse tags
 databrowse.site.register(Tag)
@@ -68,15 +67,16 @@ class FeedPage(models.Model):
     html = urllib2.urlopen(self.url).read()
     try:
       parser = hatom.MicroformatHAtom()
-      parser.feed(html)
+      parser.Feed(html)
       results = [result for result in parser.Iterate()]
     except Exception, e:
-      # try stripping out only the hentry elements if the original parse fails
       parser = hatom.MicroformatHAtom()
-      soup = BeautifulSoup(html)
-      striphtml = reduce(lambda x,y: x + y, [entry.prettify() for entry in soup.findAll(True,{"class" : re.compile("hentry")})])
-      parser.Feed(striphtml)
-      results = [result for result in parser.Iterate()]        
+      import html5lib
+      from html5lib import treebuilders
+      htmlparser = html5lib.HTMLParser(tree=treebuilders.getTreeBuilder("dom"))
+      dom = htmlparser.parse(html)
+      parser.Feed(dom)
+      results = [result for result in parser.Iterate()]
     # create articles and/or revision from results
     for result in results:
       article, created = Article.objects.get_or_create(bookmark=result.get('bookmark'))
@@ -99,13 +99,18 @@ class Article(models.Model):
   tag_models = generic.GenericRelation(TaggedItem)
   def __unicode__(self):
     """string rep"""
-    return(self.entry_title)
+    if self.entry_title:
+      return self.entry_title
+    else:
+      return self.bookmark
+    
   def from_hatom_parsed(self, result):
     """from a hatom parsed item"""
-    self.entry_title = result.get('entry-title')
-    self.entry_content = result.get('entry-content')
-    self.entry_summary = result.get('entry-summary')
-    self.tags = reduce(lambda x, y: x + ',' + y, [tag.get('name') for tag in result.get('tag')]).lower()
+    self.entry_title = result.get('entry-title', '')
+    self.entry_content = result.get('entry-content', '')
+    self.entry_summary = result.get('entry-summary', '')
+    if result.has_key('tag'):
+      self.tags = reduce(lambda x, y: x + ',' + y, [tag.get('name') for tag in result.get('tag')]).lower()
     if result.get('author') and len(result.get('author')) > 0:
       for parsedauthor in result.get('author'):
         if parsedauthor.get('url'):
