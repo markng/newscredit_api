@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import sys, os, random, time
+from multiprocessing.managers import BaseManager
 
 def setup_environment():
 	pathname = os.path.dirname(sys.argv[0])
@@ -12,6 +13,7 @@ def setup_environment():
 
 setup_environment()
 from newscredit_store.crawler.models import FeedPage
+import django.utils.daemonize
 
 def main():
   """main loop"""
