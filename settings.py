@@ -1,4 +1,7 @@
 # Django settings for newscredit_store project.
+import os
+from os import path as os_path
+PROJECT_PATH = os_path.abspath(os_path.split(__file__)[0])
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -54,7 +57,7 @@ SECRET_KEY = '8^x5^gmzetwf%jqs)j)f1rb93g#7ccgg4h9d)!q!7qr6a59166'
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.load_template_source',
     'django.template.loaders.app_directories.load_template_source',
-#     'django.template.loaders.eggs.load_template_source',
+    'django.template.loaders.eggs.load_template_source',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -69,6 +72,7 @@ TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
+    os_path.join(PROJECT_PATH, 'templates'),
 )
 
 INSTALLED_APPS = (
@@ -83,3 +87,5 @@ INSTALLED_APPS = (
   'extensions',
   'django_evolution',
 )
+
+MAXIMUM_CRAWLER_THREADS = 4
