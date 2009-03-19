@@ -5,8 +5,9 @@ from tagging.fields import TagField
 from tagging.models import Tag, TaggedItem
 from datetime import datetime, timedelta
 from django.contrib.contenttypes import generic
+from urlparse import urlparse
 from BeautifulSoup import BeautifulSoup
-import pprint, urllib2, re, os
+import pprint, urllib2, re, os, time
 
 #browse tags
 databrowse.site.register(Tag)
@@ -56,15 +57,20 @@ class FeedPage(models.Model):
   refresh_minutes = models.IntegerField(help_text="How many minutes to wait before refreshing this page", default=120)
   refresh_at = models.DateTimeField(null=True, blank=True)
   objects = FeedPageManager()
+  crawled = [] # what pages have been crawled in this instance
   def __unicode__(self):
     """string rep"""
     return self.url
-  def fetch(self):
+  def fetch(self, url=None):
     """fetch feed and parse it"""
+    if not url:
+      url = self.url
+    print "fetching "+ url
+    self.crawled.append(url)
     self.updated_at = datetime.now()
     self.refresh_at = datetime.now() + timedelta(minutes=self.refresh_minutes)
     self.save()
-    html = urllib2.urlopen(self.url).read()
+    html = urllib2.urlopen(url).read()
     try:
       parser = hatom.MicroformatHAtom()
       parser.Feed(html)
@@ -79,9 +85,22 @@ class FeedPage(models.Model):
       results = [result for result in parser.Iterate()]
     # create articles and/or revision from results
     for result in results:
-      article, created = Article.objects.get_or_create(bookmark=result.get('bookmark'))
-      article.from_hatom_parsed(result)
-      article.save()
+      if result.get('bookmark'):
+        if re.match('http://', result.get('bookmark')):
+          bookmark = result.get('bookmark')
+        elif re.match('/', result.get('bookmark')):
+          bookmark = 'http://' + urlparse(url).netloc + result.get('bookmark')
+        else:
+          bookmark = url + result.get('bookmark')
+      else:
+        bookmark = url
+      print "bookmark is "+ bookmark
+      if bookmark != url and bookmark not in self.crawled:
+        self.fetch(url=bookmark) # fetch the actual version, not the summarised one
+      else:
+        article, created = Article.objects.get_or_create(bookmark=bookmark)
+        article.from_hatom_parsed(result)
+        article.save()      
     return True
 admin.site.register(FeedPage)
 databrowse.site.register(FeedPage)
