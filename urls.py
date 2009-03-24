@@ -15,4 +15,5 @@ urlpatterns = patterns('',
     (r'^admin/(.*)', admin.site.root),
     (r'^databrowse/(.*)', databrowse.site.root),
     (r'^$', 'django.views.generic.simple.direct_to_template', {'template' : 'index.html'}, 'home'),
+    (r'^', include('crawler.urls')),
 )
