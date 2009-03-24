@@ -22,10 +22,15 @@ class FetchIt(Thread):
     super(FetchIt, self).__init__()
     self.page = page
     self.status = False
+  def __str__(self):
+    """docstring for __str__"""
+    return self.name
   def run(self):
     """fetch it"""
     try:
+      self.name = page.id
       self.page.fetch()
+      self.page.save()
       self.status = True
     except Exception, e:
       self.status = e
@@ -40,13 +45,14 @@ def reap(threads):
       threads.remove(thread)
 
 if __name__ == '__main__':
+  become_daemon()
   threads = []
   while True:
     reap(threads)
-    if threads <= settings.MAXIMUM_CRAWLER_THREADS:
+    if len(threads) <= settings.MAXIMUM_CRAWLER_THREADS:
       pages = get_pages()
       for page in pages:
-        if threads <= settings.MAXIMUM_CRAWLER_THREADS:
+        if len(threads) <= settings.MAXIMUM_CRAWLER_THREADS:
           thread = FetchIt(page)
           threads.append(thread)
           thread.start()
