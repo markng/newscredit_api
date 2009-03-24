@@ -7,10 +7,9 @@ from datetime import datetime, timedelta
 from django.contrib.contenttypes import generic
 from urlparse import urlparse
 from BeautifulSoup import BeautifulSoup
-import pprint, urllib2, re, os, time
+import pprint, urllib2, re, os, time, simplejson
 
 #browse tags
-databrowse.site.register(Tag)
 
 # Create your models here.
 class CrawlSite(models.Model):
@@ -40,8 +39,6 @@ class CrawlSite(models.Model):
       for page in self.feed_pages.all():
         results.append(page.fetch())
       return True
-admin.site.register(CrawlSite)
-databrowse.site.register(CrawlSite)
 
 class FeedPageManager(models.Manager):
   """manager for feed pages"""
@@ -94,7 +91,7 @@ class FeedPage(models.Model):
           bookmark = url + result.get('bookmark')
       else:
         bookmark = url
-      print "bookmark is "+ bookmark
+      print "bookmark is "+ bookmark +" and url is "+ url
       if bookmark != url and bookmark not in self.crawled:
         self.fetch(url=bookmark) # fetch the actual version, not the summarised one
       else:
@@ -102,8 +99,6 @@ class FeedPage(models.Model):
         article.from_hatom_parsed(result)
         article.save()      
     return True
-admin.site.register(FeedPage)
-databrowse.site.register(FeedPage)
 
 class Article(models.Model):
   """article"""
@@ -122,7 +117,11 @@ class Article(models.Model):
       return self.entry_title
     else:
       return self.bookmark
-    
+  
+  def get_absolute_url(self):
+    """get url"""
+    return self.bookmark
+  
   def from_hatom_parsed(self, result):
     """from a hatom parsed item"""
     self.entry_title = result.get('entry-title', '')
@@ -132,13 +131,17 @@ class Article(models.Model):
       self.tags = reduce(lambda x, y: x + ',' + y, [tag.get('name') for tag in result.get('tag')]).lower()
     if result.get('author') and len(result.get('author')) > 0:
       for parsedauthor in result.get('author'):
-        if parsedauthor.get('url'):
-          author, created = Author.objects.get_or_create(url=parsedauthor.get('url'))
-          author.link_to_article_from_hcard(self,parsedauthor)
-        else:
-          name, created = Name.objects.get_or_create(fn=parsedauthor.get('fn'))
-          name.articles.add(self)
-          name.save()
+        try:
+          if parsedauthor.get('url'):
+            author, created = Author.objects.get_or_create(url=parsedauthor.get('url'))
+            author.link_to_article_from_hcard(self,parsedauthor)
+            author.save()
+          else:
+            name, created = Name.objects.get_or_create(fn=parsedauthor.get('fn'))
+            name.articles.add(self)
+            name.save()          
+        except Exception, e:
+          pass # fail bad authors silently - (be conservative in what you send, and liberal in what you accept)
     try:
       self.published = datetime.strptime(result.get('published'), "%Y-%m-%dT%H:%M:%SZ")
     except Exception, e:
@@ -149,8 +152,19 @@ class Article(models.Model):
       # TODO : some better logic here, that checks if the article has been updated
       self.updated = datetime.now()
     return True
-admin.site.register(Article)
-databrowse.site.register(Article)
+  
+  def as_json(self):
+    """json representation"""
+    show = {
+      'bookmark' : self.bookmark,
+      'entry-title' : self.entry_title,
+      'entry-summary' : self.entry_summary,
+      'entry-content' : self.entry_content,
+      'updated' : self.updated.ctime(),
+      'published' : self.published.ctime(),
+      'tags' : self.tags,
+    }
+    return(simplejson.dumps(show))
 
 class FeedPageArticle(models.Model):
   """relationship between Article and FeedPage"""
@@ -180,8 +194,6 @@ class Author(models.Model):
     author_name.name = name
     author_name.articles.add(article)
     author_name.save()
-admin.site.register(Author)
-databrowse.site.register(Author)
 
 class Name(models.Model):
   """names for people"""
@@ -223,8 +235,6 @@ class Principles(models.Model):
   def __unicode__(self):
     """string rep"""
     return self.url
-admin.site.register(Principles)
-databrowse.site.register(Principles)
   
 class Revision(models.Model):
   """revision of article"""
@@ -233,4 +243,19 @@ class Revision(models.Model):
   entry_title = models.TextField("Title")
   entry_content = models.TextField("Content", null=True, blank=True)
   entry_summary = models.TextField("Summary")
-admin.site.register(Revision)
+
+try:
+  databrowse.site.register(Tag)
+  admin.site.register(CrawlSite)
+  databrowse.site.register(CrawlSite)
+  admin.site.register(FeedPage)
+  databrowse.site.register(FeedPage)
+  admin.site.register(Article)
+  databrowse.site.register(Article)
+  admin.site.register(Author)
+  databrowse.site.register(Author)
+  admin.site.register(Principles)
+  databrowse.site.register(Principles)
+  admin.site.register(Revision)
+except Exception, e:
+  pass
