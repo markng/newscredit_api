@@ -47,6 +47,7 @@ TEMPLATE_DIRS = (
 SEARCH_FACET_PARAMS = [
     ("facet", "true"),             # basic faceting
     ("facet.field", "author"),
+    ("facet.field", "tags"),    
 ]
 
 SEARCH_SORT_PARAMS = {
