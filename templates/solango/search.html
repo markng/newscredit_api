@@ -1,20 +1,21 @@
 {% extends "base.html" %}
-
 {% block content %}
+<form action="." method="GET">
+	<ul>
+	  {{form.as_ul}}
+	</ul>
+	<input type='submit', value='Search'>
+</form>
+
 <div class="facets">
+  <a href="?">See All Results</a>
 <ul class="linkType">
- <li><a href="?">See All Results</a></li>
 {% for link in facets %}
-    
-    {% if link.href %}
-        <li><a class="Facet{{ link.level }} {% if link.active %}active{% endif %}"
-            href="{{ link.href }}">{{ link.anchor }}</a> {% if link.count %} ({{ link.count }}) {% endif %}</li>
-    {% else %}
-        </ul>
-        <ul class="linkType">
-        <li><h3>{{ link }}</h3></li>
-    {% endif %}
-    
+      {% if link.href %}{% if link.count %}<li><a class="Facet{{ link.level }} {% if link.active %}active{% endif %}" href="{{ link.href }}">{{ link.anchor }}</a> {% if link.count %} ({{ link.count }}) {% endif %}</li>{% endif %}{% else %}
+          </ul>
+          <h3>{{ link }}</h3>
+          <ul class="linkType">
+      {% endif %}      
 {% endfor %}
 </ul>
 {% if sort_links %}
@@ -31,12 +32,6 @@
 {% endif %}
 </div>
 
-	<form action="." method="GET">
-		<ul>
-		  {{form.as_ul}}
-		</ul>
-		<input type='submit', value='Search'>
-	</form>
 	
 	<div>
 	{% if form.data.q and not paginator.results.documents %}
