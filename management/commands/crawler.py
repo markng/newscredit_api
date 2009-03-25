@@ -45,7 +45,7 @@ def reap(threads):
       threads.remove(thread)
 
 if __name__ == '__main__':
-  become_daemon()
+  #become_daemon()
   threads = []
   while True:
     reap(threads)

@@ -5,6 +5,7 @@ class ArticleDocument(solango.SearchDocument):
   date = solango.fields.DateField()
   title = solango.fields.CharField(copy=True)
   content = solango.fields.TextField(copy=True)
+  author = solango.fields.CharField(copy=True)
   
   class Media:
     template = 'solango/document.html'
@@ -27,4 +28,12 @@ class ArticleDocument(solango.SearchDocument):
       return instance.entry_title
     else:
       return instance.__unicode__()
+  
+  def transform_author(self, instance):
+    """docstring for transform_author"""
+    if len(instance.names.all()):
+      return instance.names.all()[0].__unicode__()
+    else:
+      return ''
+    
 solango.register(Article, ArticleDocument)

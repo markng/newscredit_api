@@ -62,7 +62,6 @@ class FeedPage(models.Model):
     """fetch feed and parse it"""
     if not url:
       url = self.url
-    print "fetching "+ url
     self.crawled.append(url)
     self.updated_at = datetime.now()
     self.refresh_at = datetime.now() + timedelta(minutes=self.refresh_minutes)
@@ -91,7 +90,6 @@ class FeedPage(models.Model):
           bookmark = url + result.get('bookmark')
       else:
         bookmark = url
-      print "bookmark is "+ bookmark +" and url is "+ url
       if bookmark != url and bookmark not in self.crawled:
         self.fetch(url=bookmark) # fetch the actual version, not the summarised one
       else:
@@ -202,7 +200,10 @@ class Name(models.Model):
   articles = models.ManyToManyField(Article, related_name='names')
   def __unicode__(self):
     """string rep"""
-    return fn
+    if self.fn:
+      return self.fn
+    else:
+      return 'author id ' + self.id.__str__()
   
 class AuthorName(models.Model):
   """author url to name relationship"""
@@ -212,7 +213,7 @@ class AuthorName(models.Model):
   articles = models.ManyToManyField(Article, blank=True, null=True)
   def __unicode__(self):
     """string rep"""
-    return "%s : %s" % (self.author, self.name)
+    return "%s" % (self.name)
 
 class WorkedOn(models.Model):
   """relationship between articles and authors"""
@@ -254,6 +255,8 @@ try:
   databrowse.site.register(Article)
   admin.site.register(Author)
   databrowse.site.register(Author)
+  admin.site.register(Name)
+  databrowse.site.register(Name)
   admin.site.register(Principles)
   databrowse.site.register(Principles)
   admin.site.register(Revision)
