@@ -6,6 +6,7 @@ class ArticleDocument(solango.SearchDocument):
   title = solango.fields.CharField(copy=True)
   content = solango.fields.TextField(copy=True)
   author = solango.fields.CharField(copy=True)
+  tags = solango.fields.CharField(copy=True, multi_valued=True)
   
   class Media:
     template = 'solango/document.html'
@@ -35,5 +36,9 @@ class ArticleDocument(solango.SearchDocument):
       return instance.names.all()[0].__unicode__()
     else:
       return ''
+
+  def transform_tags(self, instance):
+    """transform tags for solr"""
+    return instance.tags.split(',')
     
 solango.register(Article, ArticleDocument)
