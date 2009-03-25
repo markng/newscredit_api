@@ -3,7 +3,10 @@
   <meta http-equiv="Content-type" content="text/html; charset=utf-8">
   <title>{% block title %}{% endblock %}</title>
 </head>
-<body {% block extrabody %}{% endblock %}>
+<body{% block extrabody %}{% endblock %}>
+  <div id="header">
+    <img src="http://newscredit.org/wp-content/themes/newsid/images/nc_logo_final.png" alt="NewsCredit">
+  </div>
   {% block content %}
     
   {% endblock %}
