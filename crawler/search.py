@@ -40,5 +40,8 @@ class ArticleDocument(solango.SearchDocument):
   def transform_tags(self, instance):
     """transform tags for solr"""
     return instance.tags.split(',')
-    
+  
+  def get_model(self):
+    """get model"""
+    return Article.objects.get(id=self.fields['id'].value)
 solango.register(Article, ArticleDocument)

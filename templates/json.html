@@ -1,0 +1,24 @@
+{% load nc_extras %}
+{ "articles" : [
+    {% for document in paginator.results.documents %}{{ document.get_model.as_json|safe }},
+    {% endfor %}
+  ],
+  "facets" : [
+    {% for link in facets %}{% if link.href and link.count %}{{ link|jsonify }},
+    {% endif %}{% endfor %}
+  ],
+  "sort" : [
+    {% for link in sort_links %}{% if link.anchor %}{{ link|jsonify }},    
+    {% endif %}{% endfor %}
+  ],
+  {% if paginator.has_previous %}
+  "previous" : {{ paginator.previous_link|jsonify }},
+  {% endif %}
+  {% if paginator.has_next %}
+  "next" : {{ paginator.next_link|jsonify }},
+  {% endif %}
+  "pages" : [
+  {% for link in paginator.links %}{% if link.href %}{{ link|jsonify }},
+  {% endif %}{% endfor %}
+  ],
+}
