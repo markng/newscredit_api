@@ -58,27 +58,25 @@ class FeedPage(models.Model):
   def __unicode__(self):
     """string rep"""
     return self.url
-  def fetch(self, url=None):
+  def fetch(self, url=None, follow_next=False):
     """fetch feed and parse it"""
     if not url:
       url = self.url
+    print url
+    if url in self.crawled:
+      return False # Already crawled
     self.crawled.append(url)
     self.updated_at = datetime.now()
     self.refresh_at = datetime.now() + timedelta(minutes=self.refresh_minutes)
     self.save()
     html = urllib2.urlopen(url).read()
-    try:
-      parser = hatom.MicroformatHAtom()
-      parser.Feed(html)
-      results = [result for result in parser.Iterate()]
-    except Exception, e:
-      parser = hatom.MicroformatHAtom()
-      import html5lib
-      from html5lib import treebuilders
-      htmlparser = html5lib.HTMLParser(tree=treebuilders.getTreeBuilder("dom"))
-      dom = htmlparser.parse(html)
-      parser.Feed(dom)
-      results = [result for result in parser.Iterate()]
+    parser = hatom.MicroformatHAtom()
+    import html5lib
+    from html5lib import treebuilders
+    htmlparser = html5lib.HTMLParser(tree=treebuilders.getTreeBuilder("dom"))
+    dom = htmlparser.parse(html)
+    parser.Feed(dom)
+    results = [result for result in parser.Iterate()]          
     # create articles and/or revision from results
     for result in results:
       if result.get('bookmark'):
@@ -91,11 +89,33 @@ class FeedPage(models.Model):
       else:
         bookmark = url
       if bookmark != url and bookmark not in self.crawled:
-        self.fetch(url=bookmark) # fetch the actual version, not the summarised one
+        try:
+          self.fetch(url=bookmark) # fetch the actual version, not the summarised one
+        except Exception, e:
+          pass
       else:
         article, created = Article.objects.get_or_create(bookmark=bookmark)
         article.from_hatom_parsed(result)
-        article.save()      
+        article.save()
+    if follow_next and len(results) > 0:
+      # follow next links to find more articles and spider entire sites -
+      # do this even if they're outside the hfeed element, for the moment (we may want to change this)
+      # clear some stuff we don't need anymore
+      del results, parser, html
+      # find next links
+      for element in dom.getElementsByTagName('a'):
+        if element.getAttribute('rel').lower() == 'next':
+          try:
+            time.sleep(3) # let's not go nuts here
+            next = element.getAttribute('href')
+            if not re.match('http://', next):
+              if re.match('/', next):
+                next = 'http://' + urlparse(url).netloc + next
+              else:
+                next = url + next
+            self.fetch(url=next, follow_next=True)            
+          except Exception, e:
+            pass
     return True
 
 class Article(models.Model):
