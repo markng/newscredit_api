@@ -30,7 +30,7 @@ INSTALLED_APPS = (
   'django.contrib.sites',
   'django.contrib.admin',
   'django.contrib.databrowse',
-  'newscredit_store.crawler',
+  'crawler',
   'solango',
   'tagging',
   'extensions',
