@@ -47,3 +47,5 @@ MAXIMUM_CRAWLER_THREADS = 4
 SOLR_ROOT = '/path/to/solr/apache-solr-1.3.0/example/'
 SOLR_SCHEMA_PATH = SOLR_ROOT + 'solr/conf/schema.xml'
 SOLR_DATA_DIR = SOLR_ROOT + 'solr/data'
+# 1/x chance that on each scrape, all previous/next links will be followed
+FULL_SCRAPE_CHANCE = 10 
