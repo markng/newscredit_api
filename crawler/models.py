@@ -239,7 +239,7 @@ class WorkedOn(models.Model):
   """relationship between articles and authors"""
   author = models.ForeignKey(Author, db_index=True)
   article = models.ForeignKey(Article, db_index=True)
-  role = models.TextField(null=True, blank=True, db_index=True)
+  role = models.CharField(null=True, blank=True, db_index=True, size=255)
   class Meta:
     verbose_name = 'worked on (article <-> author)'
     verbose_name_plural = 'worked on (article <-> author)'
