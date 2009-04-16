@@ -10,7 +10,7 @@ def setup_environment():
 	management.setup_environ(settings)
 
 setup_environment()
-from newscredit_store.crawler.models import FeedPage
+from crawler.models import FeedPage
 from django.utils.daemonize import become_daemon
 from django.conf import settings
 from threading import Thread

@@ -1,5 +1,6 @@
 import solango, re
 from crawler.models import Article
+import datetime
 
 class ArticleDocument(solango.SearchDocument):
   date = solango.fields.DateField()
@@ -14,15 +15,19 @@ class ArticleDocument(solango.SearchDocument):
   def transform_date(self, instance):
     if instance.updated:
       return instance.updated
-    else:
+    elif instance.published:
       return instance.published
+    else:
+      return datetime.datetime.now()
       
   def transform_content(self, instance):
     r = re.compile(r'<.*?>') # strip html tags
     if instance.entry_content:
       return r.sub('', instance.entry_content)
-    else:
+    elif instance.entry_summary:
       return r.sub('', instance.entry_summary)
+    else:
+      return ''
 
   def transform_title(self, instance):
     if instance.entry_title:

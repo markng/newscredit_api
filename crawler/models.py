@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib import admin, databrowse
-from newscredit_store.locallibs.aump import hall, hatom
+from locallibs.aump import hall, hatom
 from tagging.fields import TagField
 from tagging.models import Tag, TaggedItem
 from datetime import datetime, timedelta
