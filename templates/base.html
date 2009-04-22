@@ -3,6 +3,12 @@
   <meta http-equiv="Content-type" content="text/html; charset=utf-8">
   <title>{% block title %}{% endblock %}</title>
   <style type="text/css" media="screen">
+    img#mstlogo{
+      float: right;
+    }
+    img#nclogo{
+      padding: 3px;
+    }
     div.facets{
       float: left;
     }
@@ -10,7 +16,12 @@
 </head>
 <body{% block extrabody %}{% endblock %}>
   <div id="header">
-    <img src="http://newscredit.org/wp-content/themes/newsid/images/nc_logo_final.png" alt="NewsCredit">
+    <img src="/images/nc_logo_final.png" id="nclogo" alt="NewsCredit"> <img src="/images/mst_logo.jpg" id="mstlogo" alt="Media Standards Trust">
+  </div>
+  <div id="nav">
+    <ul>
+      <li><a href="{% url solango_search %}">Search</a></li>
+    </ul>
   </div>
   {% block content %}
     
