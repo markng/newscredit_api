@@ -31,9 +31,10 @@ INSTALLED_APPS = (
   'django.contrib.admin',
   'django.contrib.databrowse',
   'crawler',
+  'entify',
   'solango',
   'tagging',
-  'extensions',
+  'django_extensions',
   'django_evolution',
 )
 
