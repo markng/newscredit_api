@@ -4,6 +4,7 @@ from locallibs.aump import hall, hatom
 from tagging.fields import TagField
 from tagging.models import Tag, TaggedItem
 from datetime import datetime, timedelta
+from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 from urlparse import urlparse
 from BeautifulSoup import BeautifulSoup
@@ -140,6 +141,16 @@ class Article(models.Model):
     """get url"""
     return self.bookmark
   
+  def analysis_text(self):
+    """provide text for analysis"""
+    return self.entry_title + ' ' + self.entry_content
+  
+  def analyze(self):
+    """add semantic entities"""
+    from entify.models import analyze as entify_analyze
+    results = entify_analyze(self)
+    return results
+    
   def from_hatom_parsed(self, result):
     """from a hatom parsed item"""
     self.entry_title = result.get('entry-title', '')
@@ -183,6 +194,13 @@ class Article(models.Model):
       'tags' : self.tags,
     }
     return(simplejson.dumps(show))
+
+class ArticleEntity(models.Model):
+  """relationship between Articles and Entities"""
+  article = models.ForeignKey(Article)
+  content_type = models.ForeignKey(ContentType)
+  entity_id = models.PositiveIntegerField()
+  entity = generic.GenericForeignKey('content_type', 'entity_id')
 
 class FeedPageArticle(models.Model):
   """relationship between Article and FeedPage"""
