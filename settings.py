@@ -35,7 +35,6 @@ INSTALLED_APPS = (
   'solango',
   'tagging',
   'django_extensions',
-  'django_evolution',
 )
 
 TEMPLATE_DIRS = (
