@@ -1,7 +1,6 @@
 from django.http import Http404, HttpResponse
 from django.core.exceptions import ObjectDoesNotExist
 from django.core import serializers
-from twitfave.locallib.decorators.json import json_callback
 
 def json_object(request, queryset, object_id=None, slug=None, slug_field='slug'):
   """docstring for json_object"""
