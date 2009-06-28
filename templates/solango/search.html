@@ -1,62 +1,137 @@
-{% extends "base.html" %}
-{% block content %}
-<form action="." method="GET">
-	<ul>
-	  {{form.as_ul}}
-	</ul>
-	<input type='submit' value='Search'>
-</form>
-
-<div class="facets">
-  <a href="?">See All Results</a>
-<ul class="linkType">
-{% for link in facets %}
-      {% if link.href %}{% if link.count %}<li><a class="Facet{{ link.level }} {% if link.active %}active{% endif %}" href="{{ link.href }}">{{ link.anchor }}</a> {% if link.count %} ({{ link.count }}) {% endif %}</li>{% endif %}{% else %}
-          </ul>
-          <h3>{{ link }}</h3>
-          <ul class="linkType">
-      {% endif %}      
-{% endfor %}
-</ul>
-{% if sort_links %}
-<h3>Sort</h3>
-<ul>
-{% for link in sort_links %}
-    {% if link.anchor %}
-        <li><a href="{{ link.href }}">{{ link.anchor }}</a></li>
-    {% else %}
-        <li>{{ link }}</li>
-    {% endif %}
-{% endfor %}
-</ul>
-{% endif %}
-</div>
-
-	
-	<div>
-	{% if form.data.q and not paginator.results.documents %}
-	No results found for <em>{{form.data.q}}</em>. Please modify your search.
-	{% endif %}
-	
-	{% for doc in paginator.results.documents %}
-		{{doc.render_html|safe}}
-	{% endfor %}
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>Value Added News</title>
+	<link rel="stylesheet" type="text/css" href="/css/all.css" />
+	<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7" />
+	<!--[if lt IE 7]><link rel="stylesheet" type="text/css" href="/css/lt7.css" media="screen"/><![endif]-->
+</head>
+<body class="search-page">
+	<div class="header type1">
+		<div class="header-cnt">
+			<div class="header-inn">
+				<div class="header-inside">
+					<!-- logo -->
+					<strong class="logo"><a href="#">ValueAddedNews</a></strong>
+					<form action="#">
+						<div class="search">
+							<p>
+								Search news faster and more accurately
+							</p>
+							<div class="search-cnt">
+								<label for="q">Search</label>
+								<span class="input"><input id="q" type="text" value="Enter keyword" class="text" /></span>
+								<input type="image" src="/images/go-btn.gif" alt="Search" class="button" />
+							</div>
+						</div>
+					</form>
+				</div>	
+				<div class="profit">
+					<p>A non-profit initiative of the</p>
+					<ul>
+						<li><a href="#"><img src="/images/logo09.gif" alt="#" /></a></li>
+						<li><a href="#"><img src="/images/logo10.gif" alt="#" /></a></li>
+					</ul>
+				</div>
+			</div>	
+		</div>
 	</div>
-	
-    <div class="pagination">
-	{% if paginator.has_previous %}
-	     <a href="{{ paginator.previous_link }}">&lt;&lt;</a> | 
-	{% endif %}
-	{% for link in paginator.links %}
-	    {% if link.href %}
-	        <a href="{{ link.href }}">{{ link.anchor }}</a> |
-	    {% else %}
-	        {{ link }} |
-	    {% endif %}
-	{% endfor %}
-	{% if paginator.has_next %}
-	     <a href="{{ paginator.next_link }}">&gt;&gt;</a>
-	{% endif %}
+	<div class="watch-box">
+		<div class="watch-box-cnt">
+			<p>112 articles found</p>
+			<a class="filter" href="#"><span>Advanced Filter</span></a>
+		</div>
 	</div>
-	
-{% endblock %}
+	<div class="primary">
+		<div class="primary-cnt">
+			<div class="results">
+				<ul class="sort">
+					<li>Sort by:</li>
+					<li class="active"><a href="#">Relevance</a></li>
+					<li class="date"><a href="#">Date</a></li>
+				</ul>
+				{% for doc in paginator.results.documents %}
+            		{{doc.render_html|safe}}
+            	{% endfor %}
+            	
+			</div>
+			<div class="articles">
+				<p>Filter articles by</p>
+				<h3>Date</h3>
+				<form action="#">
+					<ul class="filter-list">
+						<li>
+							<input id="fe01" type="checkbox" class="check" />
+							<label for="fe01"><strong>2009</strong> (25)</label>
+						</li>
+						<li>
+							<input id="fe02" type="checkbox" class="check" />
+							<label for="fe02"><strong>2008</strong> (17)</label>
+						</li>
+						<li>
+							<input id="fe03" type="checkbox" class="check" />
+							<label for="fe03"><strong>2007</strong> (12)</label>
+						</li>
+						<li>	
+							<input id="fe04" type="checkbox" class="check" />
+							<label for="fe04"><strong>2006</strong> (9)</label>
+						</li>
+						<li class="more"><a href="#">More like this</a></li>
+					</ul>
+					<h3>Subject</h3>
+					<ul class="filter-list">
+						<li>
+							<input id="fe05" type="checkbox" class="check" />
+							<label for="fe05"><strong>MPs</strong> (25)</label>
+						</li>
+						<li>
+							<input id="fe06" type="checkbox" class="check" />
+							<label for="fe06"><strong>Gordon Brown</strong> (25)</label>
+						</li>
+						<li>
+							<input id="fe07" type="checkbox" class="check" />
+							<label for="fe07"><strong>David Cameron</strong> (25)</label>
+						</li>
+						<li>
+							<input id="fe08" type="checkbox" class="check" />
+							<label for="fe08"><strong>Commons</strong> (25)</label>
+						</li>
+						<li>
+							<input id="fe09" type="checkbox" class="check" />
+							<label for="fe09"><strong> Lords</strong> (25)</label>
+						</li>
+						<li class="more"><a href="#">More like this</a></li>
+					</ul>	
+					<h3>Location</h3>
+					<ul class="filter-list">
+						<li>
+							<input id="fe10" type="checkbox" class="check" />
+							<label for="fe10"><strong>London</strong> (25)</label>
+						</li>
+						<li>
+							<input id="fe11" type="checkbox" class="check" />
+							<label for="fe11"><strong>Leeds</strong> (25)</label>
+						</li>
+						<li>
+							<input id="fe12" type="checkbox" class="check" />
+							<label for="fe12"><strong>Glasgow</strong> (25)</label>
+						</li>
+						<li>
+							<input id="fe13" type="checkbox" class="check" />
+							<label for="fe13"><strong>Cardiff</strong> (25)</label>
+						</li>
+						<li class="more"><a href="#">More like this</a></li>
+					</ul>
+				</form>	
+			</div>
+		</div>
+	</div>
+	<!-- footer -->
+	<div class="footer">
+		<ul>
+			<li>&copy;2009 Media Standards Trust</li>
+		</ul>
+	</div>
+</body>
+</html>
