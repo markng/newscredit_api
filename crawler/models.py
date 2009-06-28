@@ -45,7 +45,7 @@ class FeedPageManager(models.Manager):
   """manager for feed pages"""
   def get_due_pages(self):
     """get pages due for refresh"""
-    return self.exclude(refresh_at__gt=datetime.now())
+    return self.exclude(refresh_at__lt=datetime.now())
 
 class FeedPage(models.Model):
   """pages which are either atom feeds or hatom pages"""
