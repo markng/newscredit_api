@@ -8,6 +8,7 @@ class ArticleDocument(solango.SearchDocument):
   content = solango.fields.TextField(copy=True)
   author = solango.fields.CharField(copy=True)
   tags = solango.fields.CharField(copy=True, multi_valued=True)
+  _cached_model = False
   
   class Media:
     template = 'solango/document.html'
@@ -48,5 +49,10 @@ class ArticleDocument(solango.SearchDocument):
   
   def get_model(self):
     """get model"""
-    return Article.objects.get(id=self.fields['id'].value)
+    if self._cached_model:
+        return self._cached_model
+    else:
+        self._cached_model = Article.objects.get(id=self.fields['id'].value)
+        return self._cached_model
+    
 solango.register(Article, ArticleDocument)
