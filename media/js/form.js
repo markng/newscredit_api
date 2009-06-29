@@ -1,5 +1,5 @@
 $(document).ready(function() {
-	$('#q').focus(function() {
+	$('#q.initial').focus(function() {
 		if (this.value == this.defaultValue) {
 			this.value = "";
 		};
