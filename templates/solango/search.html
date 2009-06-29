@@ -53,8 +53,9 @@
 			<div class="results">
 				<ul class="sort">
 					<li>Sort by:</li>
-					<li class="active"><a href="#">Relevance</a></li>
-					<li class="date"><a href="#">Date</a></li>
+					{% for link in sort_links %}
+					<li><a href="{{ link.href }}">{{ link.anchor }}</a></li>   
+					{% endfor %}
 				</ul>
 				{% for doc in paginator.results.documents %}
             		{{doc.render_html|safe}}
