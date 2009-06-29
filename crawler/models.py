@@ -1,5 +1,4 @@
 from django.db import models
-from django.contrib import admin, databrowse
 from locallibs.aump import hall, hatom
 from tagging.fields import TagField
 from tagging.models import Tag, TaggedItem
@@ -282,21 +281,3 @@ class Revision(models.Model):
   entry_title = models.TextField("Title")
   entry_content = models.TextField("Content", null=True, blank=True)
   entry_summary = models.TextField("Summary")
-
-try:
-  databrowse.site.register(Tag)
-  admin.site.register(CrawlSite)
-  databrowse.site.register(CrawlSite)
-  admin.site.register(FeedPage)
-  databrowse.site.register(FeedPage)
-  admin.site.register(Article)
-  databrowse.site.register(Article)
-  admin.site.register(Author)
-  databrowse.site.register(Author)
-  admin.site.register(Name)
-  databrowse.site.register(Name)
-  admin.site.register(Principles)
-  databrowse.site.register(Principles)
-  admin.site.register(Revision)
-except Exception, e:
-  pass
