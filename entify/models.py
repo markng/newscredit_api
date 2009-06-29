@@ -36,6 +36,7 @@ class Person(models.Model):
   def from_calais(self, entity):
     """populate from a calais entity"""
     entity = strip_calais_specifics(entity)
+    self.uri = entity['__reference']
     self.name = entity['name']
     self.role = entity['persontype']
     self.source = 'calais'
