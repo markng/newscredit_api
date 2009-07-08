@@ -84,6 +84,7 @@ def analyze(model, text=None, backend='calais'):
         person = Person()
       person.from_calais(entity)
       person.save()
+      model.add_entity(person)
       people.append(person)
   
   return result, people
