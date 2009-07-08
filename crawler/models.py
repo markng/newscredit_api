@@ -74,7 +74,7 @@ class FeedPage(models.Model):
     import html5lib
     from html5lib import treebuilders
     htmlparser = html5lib.HTMLParser(tree=treebuilders.getTreeBuilder("dom"))
-    dom = htmlparser.parse(html)
+    dom = htmlparser.parse(html.decode('utf-8'))
     parser.Feed(dom)
     results = [result for result in parser.Iterate()]          
     # create articles and/or revision from results
