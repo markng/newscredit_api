@@ -50,6 +50,7 @@ if __name__ == '__main__':
   while True:
     reap(threads)
     if len(threads) <= settings.MAXIMUM_CRAWLER_THREADS:
+      pages = None
       pages = get_pages()
       for page in pages:
         if len(threads) <= settings.MAXIMUM_CRAWLER_THREADS:
