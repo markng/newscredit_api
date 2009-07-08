@@ -47,11 +47,13 @@ SEARCH_FACET_PARAMS = [
     ("facet", "true"),             # basic faceting
     ("facet.field", "author"),
     ("facet.field", "tags"),    
+    ("facet.field", "people"),
 ]
 
 SEARCH_SORT_PARAMS = {
         "score desc": "Relevance",
-        "date desc" : "Date" # Added date
+        "date desc" : "Date (desc)",
+        "date asc" : "Date (asc)",
 }
 
 from localsettings import *
