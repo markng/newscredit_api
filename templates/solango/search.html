@@ -51,7 +51,7 @@
 	<div class="watch-box">
 		<div class="watch-box-cnt">
 			<p>{{ paginator.results.count }} articles found</p>
-			<a class="filter" href="#"><span>Advanced Filter</span></a>
+			<!--<a class="filter" href="#"><span>Advanced Filter</span></a>-->
 		</div>
 	</div>
 	<div class="primary">
@@ -71,18 +71,8 @@
 			<div class="articles">
 				<p>Filter articles by</p>
 				{% for link in facets %}
-
-                    {% if link.href %}
-                    {% if link.count and link.anchor %}
-                        <li><a class="Facet{{ link.level }} {% if link.active %}active{% endif %}"
-                            href="{{ link.href }}">{{ link.anchor }}</a> {% if link.count %} ({{ link.count }}) {% endif %}</li>
+                    {% if link.href %}{% if link.count and link.anchor %}<li><a class="Facet{{ link.level }} {% if link.active %}active{% endif %}" href="{{ link.href }}">{{ link.anchor }}</a> {% if link.count %} ({{ link.count }}) {% endif %}</li>{% endif %}{% else %}</ul><h3>{{ link }}</h3><ul class="filter-list">
                     {% endif %}
-                    {% else %}
-                        </ul>
-                        <h3>{{ link }}</h3>
-                        <ul class="filter-list">
-                    {% endif %}
-
                 {% endfor %}
 				<!--
 				
