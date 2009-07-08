@@ -73,7 +73,7 @@ class FeedPage(models.Model):
     parser = hatom.MicroformatHAtom()
     import html5lib
     from html5lib import treebuilders
-    htmlparser = html5lib.HTMLParser(tree=treebuilders.getTreeBuilder("dom"), encoding="UTF-8") # utf-8 FIXME
+    htmlparser = html5lib.HTMLParser(tree=treebuilders.getTreeBuilder("dom"))
     dom = htmlparser.parse(html)
     parser.Feed(dom)
     results = [result for result in parser.Iterate()]          
