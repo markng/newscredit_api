@@ -24,7 +24,13 @@
 							</p>
 							<div class="search-cnt">
 								<label for="q">Search</label>
-								{% for field in form %}<span class="input"><input id="q" name="q" type="text" value="{{ field.data }}" class="text" /></span>{% endfor %}
+								{% for field in form %}
+								{% if field.data %}
+								<span class="input"><input id="q" name="q" type="text" value="{{ field.data }}" class="text" /></span>
+								{% else %}
+								<span class="input"><input id="q" name="q" type="text" value="Enter keyword" class="text initial" /></span>
+								{% endif %}
+								{% endfor %}
 								
 								<img src="/images/go-btn.gif" alt="Search" class="button" />
 								<input type="submit" value="Search" class="button" />
@@ -64,6 +70,22 @@
 			</div>
 			<div class="articles">
 				<p>Filter articles by</p>
+				{% for link in facets %}
+
+                    {% if link.href %}
+                    {% if link.count and link.anchor %}
+                        <li><a class="Facet{{ link.level }} {% if link.active %}active{% endif %}"
+                            href="{{ link.href }}">{{ link.anchor }}</a> {% if link.count %} ({{ link.count }}) {% endif %}</li>
+                    {% endif %}
+                    {% else %}
+                        </ul>
+                        <h3>{{ link }}</h3>
+                        <ul class="filter-list">
+                    {% endif %}
+
+                {% endfor %}
+				<!--
+				
 				<h3>Date</h3>
 				<form action="#">
 					<ul class="filter-list">
@@ -130,6 +152,7 @@
 						<li class="more"><a href="#">More like this</a></li>
 					</ul>
 				</form>	
+			-->
 			</div>
 		</div>
 	</div>
