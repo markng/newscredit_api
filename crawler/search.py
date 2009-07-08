@@ -6,8 +6,9 @@ class ArticleDocument(solango.SearchDocument):
   date = solango.fields.DateField()
   title = solango.fields.CharField(copy=True)
   content = solango.fields.TextField(copy=True)
-  author = solango.fields.CharField(copy=True)
+  author = solango.fields.CharField(copy=True, multi_valued=True)
   tags = solango.fields.CharField(copy=True, multi_valued=True)
+  people = solango.fields.CharField(copy=True, multi_valued=True)
   _cached_model = False
   
   class Media:
@@ -38,14 +39,21 @@ class ArticleDocument(solango.SearchDocument):
   
   def transform_author(self, instance):
     """docstring for transform_author"""
-    if len(instance.names.all()):
-      return instance.names.all()[0].__unicode__()
-    else:
-      return ''
+    names = []
+    for name in instance.names.all():
+      names.append(str(name))
+    return names
 
   def transform_tags(self, instance):
     """transform tags for solr"""
     return instance.tags.split(',')
+
+  def transform_people(self, instance):
+    """get people for solr"""
+    people = []
+    for person in instance.get_people():
+      people.append(str(person))
+    return people
   
   def get_model(self):
     """get model"""
