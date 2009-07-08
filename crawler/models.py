@@ -165,7 +165,7 @@ class Article(models.Model):
             author.link_to_article_from_hcard(self,parsedauthor)
             author.save()
           else:
-            name, created = Name.objects.get_or_create(fn=parsedauthor.get('fn'))
+            name, created = Name.objects.get_or_create(fn=parsedauthor.get('fn').split(',')[0])
             name.articles.add(self)
             name.save()          
         except Exception, e:
@@ -193,6 +193,24 @@ class Article(models.Model):
       'tags' : self.tags,
     }
     return(simplejson.dumps(show))
+  
+  def add_entity(self, entity):
+    """add an entity"""
+    ae, created = ArticleEntity.objects.get_or_create(
+      entity_id=entity.pk,
+      content_type=ContentType.objects.get_for_model(entity),
+      article=self
+      )
+    return ae
+  
+  def get_people(self):
+    """get people from the entity relationships"""
+    from entify.models import Person
+    articleentities = self.articleentity_set.filter(content_type=ContentType.objects.get_for_model(Person))
+    people = []
+    for articleentity in articleentities:
+      people.append(articleentity.entity)
+    return people
 
 class ArticleEntity(models.Model):
   """relationship between Articles and Entities"""
@@ -200,6 +218,9 @@ class ArticleEntity(models.Model):
   content_type = models.ForeignKey(ContentType)
   entity_id = models.PositiveIntegerField()
   entity = generic.GenericForeignKey('content_type', 'entity_id')
+  def __unicode__(self):
+    """string rep"""
+    return "%s has %s which is a %s" % (self.article, self.entity, self.content_type)
 
 class FeedPageArticle(models.Model):
   """relationship between Article and FeedPage"""
@@ -221,7 +242,7 @@ class Author(models.Model):
     worked_on, created = WorkedOn.objects.get_or_create(author=self, article=article)
     worked_on.role = hcard.get('role', 'author') #default to author if no role provided
     worked_on.save()
-    name, created = Name.objects.get_or_create(fn=hcard.get('fn'))
+    name, created = Name.objects.get_or_create(fn=hcard.get('fn').split(',')[0])
     name.articles.add(article)
     name.save()
     author_name, created = AuthorName.objects.get_or_create(name=name, author=self)
