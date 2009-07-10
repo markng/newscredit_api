@@ -66,10 +66,10 @@ form {
 	display:block;
 	overflow:hidden;
 	text-indent:-9999px;
-	width:374px;
+	width:500px;
 	margin:22px 0 0;
 	height:32px;
-	background:url(../images/logo.gif) no-repeat;
+	background:url(../images/logo.png) no-repeat;
 }
 .logo a {
 	display:block;
@@ -766,10 +766,10 @@ ul.serv-list li.login {
 }
 .search-page .logo {
 	float:none;
-	width:372px;
+	width:502px;
 	margin:77px 0 11px 11px;
-	height:30px;
-	background:url(../images/logo2.gif) no-repeat;
+	height:41px;
+	background:url(../images/logo.png) no-repeat;
 }
 .search-page .profit {width:195px;}
 .search-page .profit p {
@@ -856,10 +856,10 @@ ul.serv-links li {
 }
 .search-page .type1 .logo {
 	float:none;
-	width:372px;
+	width:502px;
 	margin:0 0 11px 11px;
-	height:30px;
-	background:url(../images/logo2.gif) no-repeat;
+	height:41px;
+	background:url(../images/logo.png) no-repeat;
 }
 .search-page .watch-box-cnt {
 	width:828px;
