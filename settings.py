@@ -1,7 +1,6 @@
 # Django settings for newscredit_store project.
 import os
-from os import path as os_path
-PROJECT_PATH = os_path.abspath(os_path.split(__file__)[0])
+PROJECT_PATH = os.path.abspath(os.path.split(__file__)[0])
 
 # If you set this to False, Django will make some optimizations so as not
 # to load the internationalization machinery.
@@ -23,24 +22,24 @@ ROOT_URLCONF = 'urls'
 
 
 INSTALLED_APPS = (
-  'django.contrib.auth',
-  'django.contrib.contenttypes',
-  'django.contrib.sessions',
-  'django.contrib.sites',
-  'django.contrib.admin',
-  'django.contrib.databrowse',
-  'crawler',
-  'entify',
-  'solango',
-  'tagging',
-  'django_extensions',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.sites',
+    'django.contrib.admin',
+    'django.contrib.databrowse',
+    'crawler',
+    'entify',
+    'solango',
+    'tagging',
+    'django_extensions',
 )
 
 TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
-    os_path.join(PROJECT_PATH, 'templates'),
+    os.path.join(PROJECT_PATH, 'templates'),
 )
 
 SEARCH_FACET_PARAMS = [
@@ -51,9 +50,9 @@ SEARCH_FACET_PARAMS = [
 ]
 
 SEARCH_SORT_PARAMS = {
-        "score desc": "Relevance",
-        "date desc" : "Date (desc)",
-        "date asc" : "Date (asc)",
+    "score desc": "Relevance",
+    "date desc" : "Date (desc)",
+    "date asc" : "Date (asc)",
 }
 
 from localsettings import *

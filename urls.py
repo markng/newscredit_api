@@ -1,6 +1,7 @@
+from os import path as os_path
+
 from django.conf.urls.defaults import *
 from django.contrib import admin, databrowse
-from os import path as os_path
 from django.conf import settings
 
 admin.autodiscover()
