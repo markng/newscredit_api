@@ -31,12 +31,14 @@ class CrawlSite(models.Model):
         if len(self.feed_pages.all()) < 1:
             feedpage = self.feed_pages.model()
             feedpage.url = self.url
+            feedpage.refresh_at = datetime.now()
             self.feed_pages.add(feedpage)
     def crawl(self):
         #if we have no feed pages, add the actual url of the site itself
         if len(self.feed_pages.all()) < 1:
             feedpage = self.feed_pages.model()
             feedpage.url = self.url
+            feedpage.refresh_at = datetime.now()
             self.feed_pages.add(feedpage)
             feedpage.fetch()
             return True
