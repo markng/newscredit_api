@@ -80,20 +80,35 @@ def analyze(model, text=None, backend='calais'):
     from django.conf import settings
 
     calais = Calais(settings.CALAIS_API_KEY, submitter='newscredit')
-    if text:
-        result = calais.analyze(text)
+    from pprint import pprint
+    if not text:
+        _text = model.analysis_text()
     else:
-        result = calais.analyze(model.analysis_text())
-    people = []
-    for entity in result.entities:
-        if entity['_type'] == 'Person':
-            try:
-                person = Person.objects.get(uri=entity['__reference'])
-            except Person.DoesNotExist, e:
-                person = Person()
-            person.from_calais(entity)
-            person.save()
-            model.add_entity(person)
-            people.append(person)
+        _text = text
 
+    # we cannot analyse if our total content is under 100 characters
+    # after HTML cleaning. We leave OpenCalais to do this as they have
+    # advanced heuristics to do it. If our text to analyse is less than
+    # 100 characters, we skip the analysis.
+    if len( _text ) < 100:
+        return
+
+    result = calais.analyze(_text)
+    people = []
+
+    try:
+        for entity in result.entities:
+            if entity['_type'] == 'Person':
+                try:
+                    person = Person.objects.get(uri=entity['__reference'])
+                except Person.DoesNotExist, e:
+                    person = Person()
+                person.from_calais(entity)
+                person.save()
+                model.add_entity(person)
+                people.append(person)
+    except AttributeError:
+        # this happens if Calais throws an error. To ensure we continue
+        # processing other records pass this error and return False
+        return False
     return result, people
