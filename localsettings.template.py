@@ -49,3 +49,6 @@ SOLR_SCHEMA_PATH = SOLR_ROOT + 'solr/conf/schema.xml'
 SOLR_DATA_DIR = SOLR_ROOT + 'solr/data'
 # 1/x chance that on each scrape, all previous/next links will be followed
 FULL_SCRAPE_CHANCE = 10 
+
+# Your OpenCalais API Key
+CALAIS_API_KEY = 'put your key here'
