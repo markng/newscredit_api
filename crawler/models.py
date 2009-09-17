@@ -184,12 +184,12 @@ class Article(models.Model):
 
         dateformat = "%Y-%m-%dT%H:%M:%SZ"
         try:
-            self.published = datetime.strptime(result.get('published'), 
+            self.published = datetime.strptime(result.get('published'),
                 dateformat)
         except Exception, e:
             self.published = datetime.now()
         try:
-            self.updated = datetime.strptime(result.get('updated'), 
+            self.updated = datetime.strptime(result.get('updated'),
                 dateformat)
         except Exception, e:
           # TODO : some better logic here, that checks if the article has been updated
@@ -284,8 +284,8 @@ class AuthorName(models.Model):
     """author url to name relationship"""
     author = models.ForeignKey(Author, db_index=True, blank=True, null=True, related_name='authornames')
     name = models.ForeignKey(Name, db_index=True, blank=True, null=True, related_name='authornames')
-    
-    # articles and count links so we can keep a count of the popular 
+
+    # articles and count links so we can keep a count of the popular
     # names for a user to create canonical
     articles = models.ManyToManyField(Article, blank=True, null=True)
 
