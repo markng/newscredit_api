@@ -51,22 +51,50 @@ class Person(models.Model):
         pass
 
 class Organisation(models.Model):
-    """a person"""
+    """an organization or company"""
     name = models.TextField()
+    nationality = models.TextField()
+    type = models.TextField()
     uri = models.URLField(unique=True)
     data = SerializedDataField(null=True,blank=True)
+    source = models.CharField(null=True, blank=True, max_length=255)
 
-    def from_calais(self):
+    def __unicode__(self):
+        """string rep for person"""
+        return self.name
+
+    def from_calais(self, entity):
         """populate from a calais entity"""
+        entity = strip_calais_specifics(entity)
+        self.uri = entity['__reference']
+        self.name = entity['name']
+        self.nationality = entity['nationality']
+        try:
+            self.type = entity['organizationtype']
+        except KeyError:
+            # companies don't have organizationtypes
+            pass
+        self.source = 'calais'
+        self.data = entity
         pass
 
 class Place(models.Model):
-    """a person"""
+    """a city, country, continent, facility, region """
     name = models.TextField()
     uri = models.URLField(unique=True)
     data = SerializedDataField(null=True,blank=True)
-    def from_calais(self):
+
+    def __unicode__(self):
+        """string rep for person"""
+        return self.name
+
+    def from_calais(self, entity):
         """populate from a calais entity"""
+        entity = strip_calais_specifics(entity)
+        self.uri = entity['__reference']
+        self.name = entity['name']
+        self.source = 'calais'
+        self.data = entity
         pass
 
 def strip_calais_specifics(entity):
@@ -93,21 +121,30 @@ def analyze(model, text=None, backend='calais'):
         return
 
     result = calais.analyze(_text)
-    people = []
+    records = []
 
     try:
         for entity in result.entities:
             if entity['_type'] == 'Person':
-                try:
-                    person = Person.objects.get(uri=entity['__reference'])
-                except Person.DoesNotExist, e:
-                    person = Person()
-                person.from_calais(entity)
-                person.save()
-                model.add_entity(person)
-                people.append(person)
+                _model = Person
+            elif entity['_type'] in [ 'City', 'Country', 'Continent',
+                                        'Facility', 'Region' ]:
+                _model = Place
+            elif entity['_type'] in [ 'Organization', 'Company' ]:
+                _model = Organisation
+            else:
+                continue
+
+            try:
+                _record = _model.objects.get(uri=entity['__reference'])
+            except _model.DoesNotExist, e:
+                _record = _model()
+            _record.from_calais(entity)
+            _record.save()
+            model.add_entity(_record)
+            records.append(_record)
     except AttributeError:
         # this happens if Calais throws an error. To ensure we continue
         # processing other records pass this error and return False
         return False
-    return result, people
+    return result, records
