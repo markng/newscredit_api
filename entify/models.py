@@ -80,7 +80,6 @@ def analyze(model, text=None, backend='calais'):
     from django.conf import settings
 
     calais = Calais(settings.CALAIS_API_KEY, submitter='newscredit')
-    from pprint import pprint
     if not text:
         _text = model.analysis_text()
     else:
