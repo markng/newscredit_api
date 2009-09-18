@@ -100,7 +100,8 @@ class FeedPage(models.Model):
 
             if bookmark != url and bookmark not in self.crawled:
                 try:
-                    self.fetch(url=bookmark) # fetch the actual version, not the summarised one
+                    # fetch the actual version, not the summarised one
+                    self.fetch(url=bookmark)
                 except Exception, e:
                     pass
             else:
@@ -160,6 +161,23 @@ class Article(models.Model):
         results = entify_analyze(self)
         return results
 
+    def iso8601_to_datetime(self, t, format="%Y-%m-%dT%H:%M:%SZ"):
+        """Converts an ISO8601 string into a UTC datetime object. The
+        expected format for t is similar to '2009-09-18T15:34:57+01:00'.
+        """
+        if t == None:
+            return datetime.now()
+        from dateutil.parser import parse
+        # convert the provided time string, t, to a datetime object
+        parsed = parse(t)
+        # datetime object to UTC time tuple
+        parsed = parsed.utctimetuple()
+        # format as UTC time
+        parsed = time.strftime(format, parsed)
+        # convert to datetime object for SQL use
+        parsed = datetime.strptime(parsed, format)
+        return parsed
+
     def from_hatom_parsed(self, result):
         """from a hatom parsed item"""
         self.entry_title = result.get('entry-title', '')
@@ -182,18 +200,9 @@ class Article(models.Model):
                     # fail bad authors silently - (be conservative in what you send, and liberal in what you accept)
                     pass
 
-        dateformat = "%Y-%m-%dT%H:%M:%SZ"
-        try:
-            self.published = datetime.strptime(result.get('published'),
-                dateformat)
-        except Exception, e:
-            self.published = datetime.now()
-        try:
-            self.updated = datetime.strptime(result.get('updated'),
-                dateformat)
-        except Exception, e:
-          # TODO : some better logic here, that checks if the article has been updated
-            self.updated = datetime.now()
+        self.published = self.iso8601_to_datetime(result.get('published'))
+        # TODO : some better logic here, that checks if the article has been updated
+        self.updated = self.iso8601_to_datetime(result.get('updated'))
         return True
 
     def as_json(self):
