@@ -20,6 +20,7 @@ import xml.dom
 import microformat
 import hcard
 import relprinciples
+#import hrights
 from microformat import Log
 
 class MicroformatHNews(microformat.Microformat):
@@ -30,32 +31,14 @@ class MicroformatHNews(microformat.Microformat):
 
         self.CollectClassCall('source-org', self.DoSourceOrg)
         self.CollectClassCall('dateline', self.DoDateline)
-        
-        
-        self.CollectClassText('latitude', text_type = microformat.TT_STRING)
-        self.CollectClassText('longitude', text_type = microformat.TT_STRING)
-
-        self.CollectClassModifier('geo')
-        self.CollectClassAttribute('url', 'href')
-        
+        #self.CollectClassCall('hrights', hrights.MicroformatHRights(page_uri = self.page_uri, parent = self))
         self.CollectRelReparse('principles', relprinciples.MicroformatRelPrinciples(page_uri = self.page_uri, parent = self))
         self.DeclareRepeatingName('principles')
-        
-        
 
-        # self.CollectClassText('summary', text_type = microformat.TT_STRING)
-        # self.DeclareTitle('summary')
-        # self.CollectClassCall('location', self.DoLocation)
-        #
-        # self.CollectClassText('dtstart', text_type = microformat.TT_ABBR_DT)
-        # self.CollectClassText('dtend', text_type = microformat.TT_ABBR_DT)
-        #
-        # self.CollectClassAttribute('url', 'href')
-        #
-        # self.CollectRelReparse('vcard', hcard.MicroformatHCard(page_uri = self.page_uri, parent = self))
-        #
-        # self.DeclareURI('url')
-        # self.DeclareBookmark('url')
+
+        self.CollectClassModifier('geo')
+        self.CollectClassText('latitude', text_type = microformat.TT_STRING)
+        self.CollectClassText('longitude', text_type = microformat.TT_STRING)
 
     def Spawn(self):
         mf = MicroformatHNews(page_uri = self.page_uri)
@@ -74,14 +57,14 @@ class MicroformatHNews(microformat.Microformat):
             self.DoCollectClassReparse(name, element, hcard.MicroformatHCard(page_uri = self.page_uri), name)
 
     #
-    #   Datelines can be plain text or hCards
+    #   Datelines can be plain text or hCards. Published and updated attributes
+    #   will be picked up by hAtom
     #
     def DoDateline(self, name, element):
-        if "vcard" not in element.getAttribute("class").split():
-            self.AddResult(name, element, self.GetText(element))
-        else:
+        if "vcard" in element.getAttribute("class").split():
             self.DoCollectClassReparse(name, element, hcard.MicroformatHCard(page_uri = self.page_uri), name)
-
+        else:
+            self.AddResult(name, element, self.GetText(element))
 
 if __name__ == '__main__':
     import microformat
