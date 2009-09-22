@@ -4,6 +4,7 @@ import re
 import os
 import time
 import simplejson
+import logging
 
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
@@ -66,6 +67,7 @@ class FeedPage(models.Model):
     )
     refresh_at = models.DateTimeField(null=True, blank=True)
     objects = FeedPageManager()
+    logger = logging.getLogger('crawler.FeedPage')
     # what pages have been crawled in this instance
     crawled = []
     def __unicode__(self):
@@ -76,9 +78,10 @@ class FeedPage(models.Model):
         """fetch feed and parse it"""
         if not url:
             url = self.url
+        self.logger.info(u'Processing URL: %s' % url)
         print url
         if url in self.crawled:
-            # Already crawled
+            self.logger.info(u'URL already crawled')
             return False
         self.crawled.append(url)
         self.updated_at = datetime.now()
@@ -86,6 +89,7 @@ class FeedPage(models.Model):
             minutes=self.refresh_minutes
         )
         self.save()
+        self.logger.debug('Opening URL: %s' % url)
         html = urllib2.urlopen(url).read()
         parser = hatom.MicroformatHAtom()
         import html5lib
@@ -98,6 +102,7 @@ class FeedPage(models.Model):
         results = [result for result in parser.Iterate()]
         # create articles and/or revision from results
         for result in results:
+            self.logger.debug('Processing result %s' % result)
             if result.get('bookmark'):
                 if re.match('http://', result.get('bookmark')):
                     bookmark = result.get('bookmark')
@@ -122,6 +127,7 @@ class FeedPage(models.Model):
                 article.from_hatom_parsed(result)
                 article.save()
         if follow_next and len(results) > 0:
+            self.logger.debug('Processing next links')
             # follow next links to find more articles and spider entire
             # sites - do this even if they're outside the hfeed element,
             # for the moment (we may want to change this) clear some

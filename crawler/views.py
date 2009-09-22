@@ -11,7 +11,8 @@ def json_object(request, queryset, object_id=None, slug=None,
     elif slug and slug_field:
         queryset = queryset.filter(**{slug_field: slug})
     else:
-        raise AttributeError, "Generic detail view must be called with either an object_id or a slug/slug_field."
+        raise AttributeError, "Generic detail view must be called " \
+            "with either an object_id or a slug/slug_field."
 
     try:
         data = serializers.serialize('json', queryset)
