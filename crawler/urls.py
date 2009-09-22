@@ -8,5 +8,6 @@ article_json = {
 }
 
 urlpatterns = patterns('',
-    (r'^(?P<object_id>.*).json$', object_detail, dict(article_json), "article-json"),
+    (r'^(?P<object_id>.*).json$', object_detail, dict(article_json),
+        "article-json"),
 )

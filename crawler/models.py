@@ -59,7 +59,10 @@ class FeedPage(models.Model):
     url = models.URLField("Feed URL", db_index=True)
     crawl_site = models.ForeignKey(CrawlSite, related_name='feed_pages')
     updated_at = models.DateTimeField(null=True, blank=True)
-    refresh_minutes = models.IntegerField(help_text="How many minutes to wait before refreshing this page", default=120)
+    refresh_minutes = models.IntegerField(
+        help_text="How many minutes to wait before refreshing this page",
+        default=120
+    )
     refresh_at = models.DateTimeField(null=True, blank=True)
     objects = FeedPageManager()
     crawled = [] # what pages have been crawled in this instance
@@ -76,13 +79,17 @@ class FeedPage(models.Model):
             return False # Already crawled
         self.crawled.append(url)
         self.updated_at = datetime.now()
-        self.refresh_at = datetime.now() + timedelta(minutes=self.refresh_minutes)
+        self.refresh_at = datetime.now() + timedelta(
+            minutes=self.refresh_minutes
+        )
         self.save()
         html = urllib2.urlopen(url).read()
         parser = hatom.MicroformatHAtom()
         import html5lib
         from html5lib import treebuilders
-        htmlparser = html5lib.HTMLParser(tree=treebuilders.getTreeBuilder("dom"))
+        htmlparser = html5lib.HTMLParser(
+            tree=treebuilders.getTreeBuilder("dom")
+        )
         dom = htmlparser.parse(html.decode('utf-8'))
         parser.Feed(dom)
         results = [result for result in parser.Iterate()]
@@ -92,7 +99,8 @@ class FeedPage(models.Model):
                 if re.match('http://', result.get('bookmark')):
                     bookmark = result.get('bookmark')
                 elif re.match('/', result.get('bookmark')):
-                    bookmark = 'http://' + urlparse(url).netloc + result.get('bookmark')
+                    bookmark = 'http://' + urlparse(url).netloc + \
+                        result.get('bookmark')
                 else:
                     bookmark = url + result.get('bookmark')
             else:
@@ -105,13 +113,16 @@ class FeedPage(models.Model):
                 except Exception, e:
                     pass
             else:
-                article, created = Article.objects.get_or_create(bookmark=bookmark)
+                article, created = Article.objects.get_or_create(
+                    bookmark=bookmark
+                )
                 article.from_hatom_parsed(result)
                 article.save()
         if follow_next and len(results) > 0:
-            # follow next links to find more articles and spider entire sites -
-            # do this even if they're outside the hfeed element, for the moment (we may want to change this)
-            # clear some stuff we don't need anymore
+            # follow next links to find more articles and spider entire
+            # sites - do this even if they're outside the hfeed element, for
+            # the moment (we may want to change this) clear some stuff we
+            # don't need anymore
             del results, parser, html
             # find next links
             for element in dom.getElementsByTagName('a'):
@@ -135,8 +146,10 @@ class Article(models.Model):
     entry_title = models.TextField("Title", null=True, blank=True)
     entry_content = models.TextField("Content", null=True, blank=True)
     entry_summary = models.TextField("Summary", null=True, blank=True)
-    updated = models.DateTimeField("Last Updated", null=True, blank=True, db_index=True)
-    published = models.DateTimeField("First Published", null=True, blank=True, db_index=True)
+    updated = models.DateTimeField("Last Updated", null=True, blank=True,
+        db_index=True)
+    published = models.DateTimeField("First Published", null=True, blank=True,
+        db_index=True)
     feedpages = models.ManyToManyField(FeedPage, through='FeedPageArticle')
     tags = TagField()
     tag_models = generic.GenericRelation(TaggedItem)
@@ -184,24 +197,31 @@ class Article(models.Model):
         self.entry_content = result.get('entry-content', '')
         self.entry_summary = result.get('entry-summary', '')
         if result.has_key('tag'):
-            self.tags = reduce(lambda x, y: x + ',' + y, [tag.get('name') for tag in result.get('tag')]).lower()
+            self.tags = reduce(lambda x, y: x + ',' + y,
+                [tag.get('name') for tag in result.get('tag')]).lower()
         if result.get('author') and len(result.get('author')) > 0:
             for parsedauthor in result.get('author'):
                 try:
                     if parsedauthor.get('url'):
-                        author, created = Author.objects.get_or_create(url=parsedauthor.get('url'))
+                        author, created = Author.objects.get_or_create(
+                            url=parsedauthor.get('url')
+                        )
                         author.link_to_article_from_hcard(self,parsedauthor)
                         author.save()
                     else:
-                        name, created = Name.objects.get_or_create(fn=parsedauthor.get('fn').split(',')[0])
+                        name, created = Name.objects.get_or_create(
+                            fn=parsedauthor.get('fn').split(',')[0]
+                        )
                         name.articles.add(self)
                         name.save()
                 except Exception, e:
-                    # fail bad authors silently - (be conservative in what you send, and liberal in what you accept)
+                    # fail bad authors silently - (be conservative in what you
+                    # send, and liberal in what you accept)
                     pass
 
         self.published = self.iso8601_to_datetime(result.get('published'))
-        # TODO : some better logic here, that checks if the article has been updated
+        # TODO : some better logic here, that checks if the article has been
+        # updated
         self.updated = self.iso8601_to_datetime(result.get('updated'))
         return True
 
@@ -230,7 +250,9 @@ class Article(models.Model):
     def get_people(self):
         """get people from the entity relationships"""
         from entify.models import Person
-        articleentities = self.articleentity_set.filter(content_type=ContentType.objects.get_for_model(Person))
+        articleentities = self.articleentity_set.filter(
+            content_type=ContentType.objects.get_for_model(Person)
+        )
         people = []
         for articleentity in articleentities:
             people.append(articleentity.entity)
@@ -244,7 +266,8 @@ class ArticleEntity(models.Model):
     entity = generic.GenericForeignKey('content_type', 'entity_id')
 
     def __unicode__(self):
-        return "%s has %s which is a %s" % (self.article, self.entity, self.content_type)
+        return "%s has %s which is a %s" % (self.article,
+            self.entity, self.content_type)
 
 class FeedPageArticle(models.Model):
     """relationship between Article and FeedPage"""
@@ -257,21 +280,27 @@ class FeedPageArticle(models.Model):
 class Author(models.Model):
     """article author"""
     url = models.URLField("Author page", unique=True)
-    articles = models.ManyToManyField(Article, related_name='authors', through='WorkedOn')
+    articles = models.ManyToManyField(Article, related_name='authors',
+        through='WorkedOn')
 
     def __unicode__(self):
         return self.url
 
     def link_to_article_from_hcard(self, article, hcard):
         """from a hcard parsed item"""
-        worked_on, created = WorkedOn.objects.get_or_create(author=self, article=article)
+        worked_on, created = WorkedOn.objects.get_or_create(author=self,
+            article=article)
         #default to author if no role provided
         worked_on.role = hcard.get('role', 'author')
         worked_on.save()
-        name, created = Name.objects.get_or_create(fn=hcard.get('fn').split(',')[0])
+        name, created = Name.objects.get_or_create(
+            fn=hcard.get('fn').split(',')[0]
+        )
         name.articles.add(article)
         name.save()
-        author_name, created = AuthorName.objects.get_or_create(name=name, author=self)
+        author_name, created = AuthorName.objects.get_or_create(
+            name=name, author=self
+        )
         author_name.author = self
         author_name.name = name
         author_name.articles.add(article)
@@ -280,7 +309,8 @@ class Author(models.Model):
 class Name(models.Model):
     """names for people"""
     fn = models.TextField("formatted name")
-    authors = models.ManyToManyField(Author, related_name='names', through='AuthorName')
+    authors = models.ManyToManyField(Author, related_name='names',
+        through='AuthorName')
     articles = models.ManyToManyField(Article, related_name='names')
 
     def __unicode__(self):
@@ -291,8 +321,10 @@ class Name(models.Model):
 
 class AuthorName(models.Model):
     """author url to name relationship"""
-    author = models.ForeignKey(Author, db_index=True, blank=True, null=True, related_name='authornames')
-    name = models.ForeignKey(Name, db_index=True, blank=True, null=True, related_name='authornames')
+    author = models.ForeignKey(Author, db_index=True, blank=True, null=True,
+        related_name='authornames')
+    name = models.ForeignKey(Name, db_index=True, blank=True, null=True,
+        related_name='authornames')
 
     # articles and count links so we can keep a count of the popular
     # names for a user to create canonical
@@ -305,7 +337,8 @@ class WorkedOn(models.Model):
     """relationship between articles and authors"""
     author = models.ForeignKey(Author, db_index=True)
     article = models.ForeignKey(Article, db_index=True)
-    role = models.CharField(null=True, blank=True, db_index=True, max_length=255)
+    role = models.CharField(null=True, blank=True, db_index=True,
+        max_length=255)
 
     class Meta:
         verbose_name = 'worked on (article <-> author)'

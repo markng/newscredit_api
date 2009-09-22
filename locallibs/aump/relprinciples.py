@@ -26,14 +26,16 @@ from microformat import Log
 
 class MicroformatRelPrinciples(microformat.Microformat):
     def __init__(self, **args):
-        microformat.Microformat.__init__(self, root_name = "principles", uf_name = "rel-principles", root_type = "rel", **args)
+        microformat.Microformat.__init__(self, root_name = "principles",
+            uf_name = "rel-principles", root_type = "rel", **args)
 
         # self.CollectClassText('rating', text_type = microformat.TT_ABBR)
         # self.CollectClassText('best', text_type = microformat.TT_ABBR)
         # self.CollectClassText('worst', text_type = microformat.TT_ABBR)
 
         self.CollectRelAttribute('principles', 'href')
-        self.CollectRelText('principles', as_name = 'principles', text_type = microformat.TT_STRING)
+        self.CollectRelText('principles', as_name = 'principles', 
+            text_type = microformat.TT_STRING)
         self.DeclareURI('authority')
 
         self.DeclareTitle("principles")
@@ -52,7 +54,7 @@ class MicroformatRelPrinciples(microformat.Microformat):
             uri = text
             if self.page_uri:
                 uri = urlparse.urljoin(self.page_uri, uri)
-                
+
             text = self.GetText(element)
             microformat.Microformat.AddResult(self, "uri", element, uri)
 

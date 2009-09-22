@@ -62,7 +62,9 @@ class ArticleDocument(solango.SearchDocument):
         if self._cached_model:
             return self._cached_model
         else:
-            self._cached_model = Article.objects.get(id=self.fields['id'].value)
+            self._cached_model = Article.objects.get(
+                id=self.fields['id'].value
+            )
             return self._cached_model
 
 solango.register(Article, ArticleDocument)
