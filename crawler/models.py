@@ -60,12 +60,14 @@ class FeedPage(models.Model):
     crawl_site = models.ForeignKey(CrawlSite, related_name='feed_pages')
     updated_at = models.DateTimeField(null=True, blank=True)
     refresh_minutes = models.IntegerField(
-        help_text="How many minutes to wait before refreshing this page",
+        help_text = "How many minutes to wait before refreshing " \
+            "this page",
         default=120
     )
     refresh_at = models.DateTimeField(null=True, blank=True)
     objects = FeedPageManager()
-    crawled = [] # what pages have been crawled in this instance
+    # what pages have been crawled in this instance
+    crawled = []
     def __unicode__(self):
         """string rep"""
         return self.url
@@ -76,7 +78,8 @@ class FeedPage(models.Model):
             url = self.url
         print url
         if url in self.crawled:
-            return False # Already crawled
+            # Already crawled
+            return False
         self.crawled.append(url)
         self.updated_at = datetime.now()
         self.refresh_at = datetime.now() + timedelta(
@@ -120,9 +123,9 @@ class FeedPage(models.Model):
                 article.save()
         if follow_next and len(results) > 0:
             # follow next links to find more articles and spider entire
-            # sites - do this even if they're outside the hfeed element, for
-            # the moment (we may want to change this) clear some stuff we
-            # don't need anymore
+            # sites - do this even if they're outside the hfeed element,
+            # for the moment (we may want to change this) clear some
+            # stuff we don't need anymore
             del results, parser, html
             # find next links
             for element in dom.getElementsByTagName('a'):
@@ -132,7 +135,8 @@ class FeedPage(models.Model):
                         next = element.getAttribute('href')
                         if not re.match('http://', next):
                             if re.match('/', next):
-                                next = 'http://' + urlparse(url).netloc + next
+                                next = 'http://' + \
+                                    urlparse(url).netloc + next
                             else:
                                 next = url + next
                         self.fetch(url=next, follow_next=True)
@@ -146,11 +150,13 @@ class Article(models.Model):
     entry_title = models.TextField("Title", null=True, blank=True)
     entry_content = models.TextField("Content", null=True, blank=True)
     entry_summary = models.TextField("Summary", null=True, blank=True)
-    updated = models.DateTimeField("Last Updated", null=True, blank=True,
-        db_index=True)
-    published = models.DateTimeField("First Published", null=True, blank=True,
-        db_index=True)
-    feedpages = models.ManyToManyField(FeedPage, through='FeedPageArticle')
+    updated = models.DateTimeField("Last Updated", null=True,
+        blank=True, db_index=True)
+    published = models.DateTimeField("First Published", null=True,
+        blank=True, db_index=True)
+    feedpages = models.ManyToManyField(FeedPage,
+        through='FeedPageArticle'
+    )
     tags = TagField()
     tag_models = generic.GenericRelation(TaggedItem)
     def __unicode__(self):
@@ -206,7 +212,9 @@ class Article(models.Model):
                         author, created = Author.objects.get_or_create(
                             url=parsedauthor.get('url')
                         )
-                        author.link_to_article_from_hcard(self,parsedauthor)
+                        author.link_to_article_from_hcard(
+                            self,parsedauthor
+                        )
                         author.save()
                     else:
                         name, created = Name.objects.get_or_create(
@@ -215,13 +223,15 @@ class Article(models.Model):
                         name.articles.add(self)
                         name.save()
                 except Exception, e:
-                    # fail bad authors silently - (be conservative in what you
-                    # send, and liberal in what you accept)
+                    # fail bad authors silently - (be conservative in
+                    # what you send, and liberal in what you accept)
                     pass
 
-        self.published = self.iso8601_to_datetime(result.get('published'))
-        # TODO : some better logic here, that checks if the article has been
-        # updated
+        self.published = self.iso8601_to_datetime(
+            result.get('published')
+        )
+        # TODO : some better logic here, that checks if the article has
+        # been updated
         self.updated = self.iso8601_to_datetime(result.get('updated'))
         return True
 
@@ -317,12 +327,12 @@ class Name(models.Model):
         if self.fn:
             return self.fn
         else:
-              return 'author id ' + self.id.__str__()
+            return 'author id ' + self.id.__str__()
 
 class AuthorName(models.Model):
     """author url to name relationship"""
-    author = models.ForeignKey(Author, db_index=True, blank=True, null=True,
-        related_name='authornames')
+    author = models.ForeignKey(Author, db_index=True, blank=True,
+        null=True, related_name='authornames')
     name = models.ForeignKey(Name, db_index=True, blank=True, null=True,
         related_name='authornames')
 
@@ -350,7 +360,9 @@ class WorkedOn(models.Model):
 class Principles(models.Model):
     """principles"""
     url = models.URLField(unique=True)
-    articles = models.ManyToManyField(Article, related_name='principles')
+    articles = models.ManyToManyField(Article,
+        related_name='principles'
+    )
     class Meta:
         verbose_name_plural = 'Principles'
 
