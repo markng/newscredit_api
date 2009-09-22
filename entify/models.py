@@ -9,8 +9,9 @@ from django.db import models
 
 # serialized data field implementation shamelessly copied from http://www.davidcramer.net/code/181/custom-fields-in-django.html
 class SerializedDataField(models.TextField):
-    """Because Django for some reason feels its needed to repeatedly call
-    to_python even after it's been converted this does not support strings."""
+    """Because Django for some reason feels its needed to repeatedly 
+    call to_python even after it's been converted this does not support 
+    strings."""
     __metaclass__ = models.SubfieldBase
 
     def to_python(self, value):
