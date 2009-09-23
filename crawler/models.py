@@ -11,7 +11,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 from tagging.fields import TagField
 from tagging.models import Tag, TaggedItem
-from locallibs.aump import hall, hatom
+from locallibs.aump import hall, hatom, hnews
 from BeautifulSoup import BeautifulSoup
 from datetime import datetime, timedelta
 from urlparse import urlparse
@@ -91,17 +91,30 @@ class FeedPage(models.Model):
         self.save()
         self.logger.debug('Opening URL: %s' % url)
         html = urllib2.urlopen(url).read()
-        parser = hatom.MicroformatHAtom()
         import html5lib
         from html5lib import treebuilders
         htmlparser = html5lib.HTMLParser(
             tree=treebuilders.getTreeBuilder("dom")
         )
         dom = htmlparser.parse(html.decode('utf-8'))
+        # parse for hAtom
+        parser = hatom.MicroformatHAtom()
         parser.Feed(dom)
-        results = [result for result in parser.Iterate()]
+        _hatom = [result for result in parser.Iterate()]
+        # parse for hNews
+        parser = hnews.MicroformatHNews()
+        parser.Feed(dom)
+        _hnews = [result for result in parser.Iterate()]
+        # combine the two parsed lists. both look for hentry so as
+        # we're passing the same page, the entries will match up.
+        # hatoms will be the combined hatom + hnews after this
+        [_atom.update(_news)
+            for _atom, _news in map(None, _hatom, _hnews)]
+        # remove variables we don't need anymore
+        del _hnews, parser, html
+
         # create articles and/or revision from results
-        for result in results:
+        for result in _hatoms:
             self.logger.debug('Processing result %s' % result)
             if result.get('bookmark'):
                 if re.match('http://', result.get('bookmark')):
@@ -124,16 +137,16 @@ class FeedPage(models.Model):
                 article, created = Article.objects.get_or_create(
                     bookmark=bookmark
                 )
-                article.from_hatom_parsed(result)
+                article.from_parsed(result)
                 article.save()
                 article.analyze()
-        if follow_next and len(results) > 0:
+        if follow_next and len(_hatoms) > 0:
             self.logger.debug('Processing next links')
             # follow next links to find more articles and spider entire
             # sites - do this even if they're outside the hfeed element,
             # for the moment (we may want to change this) clear some
             # stuff we don't need anymore
-            del results, parser, html
+            del _hatoms
             # find next links
             for element in dom.getElementsByTagName('a'):
                 if element.getAttribute('rel').lower() == 'next':
@@ -206,8 +219,9 @@ class Article(models.Model):
         parsed = datetime.strptime(parsed, format)
         return parsed
 
-    def from_hatom_parsed(self, result):
-        """from a hatom parsed item"""
+    def from_parsed(self, result):
+        """from a hatom and hnews parsed item"""
+        # hatom fields
         self.entry_title = result.get('entry-title', '')
         self.entry_content = result.get('entry-content', '')
         self.entry_summary = result.get('entry-summary', '')
@@ -222,7 +236,7 @@ class Article(models.Model):
                             url=parsedauthor.get('url')
                         )
                         author.link_to_article_from_hcard(
-                            self,parsedauthor
+                            self, parsedauthor
                         )
                         author.save()
                     else:
@@ -235,6 +249,16 @@ class Article(models.Model):
                     # fail bad authors silently - (be conservative in
                     # what you send, and liberal in what you accept)
                     pass
+        # hnews fields - just principles at the moment although
+        # source-org and dateline are returned if they exist
+        if result.get('principles') and \
+            len(result.get('principles')) > 0:
+            principle, created = Principles.objects.get_or_create(
+                url=result.get('principles')
+            )
+            # connect to the article
+            principle.articles.add(self)
+            principle.save()
 
         self.published = self.iso8601_to_datetime(
             result.get('published')
