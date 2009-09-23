@@ -126,6 +126,7 @@ class FeedPage(models.Model):
                 )
                 article.from_hatom_parsed(result)
                 article.save()
+                article.analyze()
         if follow_next and len(results) > 0:
             self.logger.debug('Processing next links')
             # follow next links to find more articles and spider entire
@@ -165,6 +166,7 @@ class Article(models.Model):
     )
     tags = TagField()
     tag_models = generic.GenericRelation(TaggedItem)
+    logger = logging.getLogger('crawler.Article')
     def __unicode__(self):
         """string rep"""
         if self.entry_title:
@@ -183,6 +185,7 @@ class Article(models.Model):
     def analyze(self):
         """add semantic entities"""
         from entify.models import analyze as entify_analyze
+        self.logger.debug('Analyzing %s' % self.bookmark)
         results = entify_analyze(self)
         return results
 

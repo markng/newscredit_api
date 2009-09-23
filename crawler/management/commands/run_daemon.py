@@ -28,6 +28,7 @@ class FetchIt(Thread):
         try:
             self.logger.debug(u'Page ID %d' % self.page.id)
             self.name = self.page.id
+            # analze is currently called within the fetch method
             self.page.fetch()
             self.page.save()
             self.status = True
