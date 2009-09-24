@@ -107,14 +107,14 @@ class FeedPage(models.Model):
         _hnews = [result for result in parser.Iterate()]
         # combine the two parsed lists. both look for hentry so as
         # we're passing the same page, the entries will match up.
-        # hatoms will be the combined hatom + hnews after this
+        # _hatom will be the combined hatom + hnews after this
         [_atom.update(_news)
             for _atom, _news in map(None, _hatom, _hnews)]
         # remove variables we don't need anymore
         del _hnews, parser, html
 
         # create articles and/or revision from results
-        for result in _hatoms:
+        for result in _hatom:
             self.logger.debug('Processing result %s' % result)
             if result.get('bookmark'):
                 if re.match('http://', result.get('bookmark')):
@@ -138,15 +138,17 @@ class FeedPage(models.Model):
                     bookmark=bookmark
                 )
                 article.from_parsed(result)
-                article.save()
                 article.analyze()
-        if follow_next and len(_hatoms) > 0:
+                # we update solr on save, so we need to have analysed
+                # first
+                article.save()
+        if follow_next and len(_hatom) > 0:
             self.logger.debug('Processing next links')
             # follow next links to find more articles and spider entire
             # sites - do this even if they're outside the hfeed element,
             # for the moment (we may want to change this) clear some
             # stuff we don't need anymore
-            del _hatoms
+            del _hatom
             # find next links
             for element in dom.getElementsByTagName('a'):
                 if element.getAttribute('rel').lower() == 'next':
@@ -290,16 +292,20 @@ class Article(models.Model):
         )
         return ae
 
-    def get_people(self):
-        """get people from the entity relationships"""
-        from entify.models import Person
+    def get_entity(self, model='Person'):
+        """get the specified object from the entity relationships"""
+        # dynamic class loading
+        _from = __import__('entify.models', globals(), locals(),
+            [model], -1)
+        _model = _from.__getattribute__(model)
         articleentities = self.articleentity_set.filter(
-            content_type=ContentType.objects.get_for_model(Person)
+            content_type=ContentType.objects.get_for_model(_model)
         )
-        people = []
+        objects = []
         for articleentity in articleentities:
-            people.append(articleentity.entity)
-        return people
+            objects.append(articleentity.entity)
+        return objects
+
 
 class ArticleEntity(models.Model):
     """relationship between Articles and Entities"""

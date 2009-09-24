@@ -1,15 +1,17 @@
-<div class="result-box">
-	<h1><a href="{{ document.fields.url.value }}">{{ document.fields.title.value }}</a></h1>
-	<p>
+<div class="result-box hentry hnews">
+	<h1 class="entry-title"><a href="{{ document.fields.url.value }}">{{ document.fields.title.value }}</a></h1>
+	<p class="entry-summary">
 		{{ document.highlight|safe }}
 	</p>
 	<ul class="info">
-		<li>First published {{ document.get_model.published|date:"h:i d-m-y" }} </li>
+		<li class="published">First published <span class="value-title" title="{{ document.get_model.published|date:"Y-m-d\TH:iO" }}">{{ document.get_model.published|date:"h:i d-m-y" }}</span></li>
 		<!--
 		<li>Source: FIXME</li>
 		<li><a href="#">Usage Rights FIXME</a></li>
-		<li class="principles">principles FIXME</li>
 		-->
+	  {% for principle in document.get_model.principles.all %}
+		<li class="principles"><a href="{{ principle.url }}" rel="principles">Principles</a></li>
+	  {% endfor %}
 	</ul>
-	<p class="link"><a href="{{ document.fields.url.value }}">{{ document.fields.url.value }}</a></p>
+	<p class="link"><a href="{{ document.fields.url.value }}" rel="bookmark">{{ document.fields.url.value }}</a></p>
 </div>

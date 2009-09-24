@@ -11,6 +11,9 @@ class ArticleDocument(solango.SearchDocument):
     author = solango.fields.CharField(copy=True, multi_valued=True)
     tags = solango.fields.CharField(copy=True, multi_valued=True)
     people = solango.fields.CharField(copy=True, multi_valued=True)
+    organisations = solango.fields.CharField(copy=True,
+        multi_valued=True)
+    places = solango.fields.CharField(copy=True, multi_valued=True)
     _cached_model = False
 
     class Media:
@@ -50,21 +53,31 @@ class ArticleDocument(solango.SearchDocument):
         """transform tags for solr"""
         return instance.tags.split(',')
 
+    def transform_entity(self, instance, what):
+        """get a model for solr"""
+        whats = []
+        for _what in instance.get_entity(what):
+            whats.append(str(_what))
+        return whats
+
     def transform_people(self, instance):
         """get people for solr"""
-        people = []
-        for person in instance.get_people():
-            people.append(str(person))
-        return people
+        return self.transform_entity(instance, 'Person')
+
+    def transform_organisations(self, instance):
+        """get organisations for solr"""
+        return self.transform_entity(instance, 'Organisation')
+
+    def transform_places(self, instance):
+        """get places for solr"""
+        return self.transform_entity(instance, 'Place')
 
     def get_model(self):
         """get model"""
-        if self._cached_model:
-            return self._cached_model
-        else:
+        if not self._cached_model:
             self._cached_model = Article.objects.get(
                 id=self.fields['id'].value
             )
-            return self._cached_model
+        return self._cached_model
 
 solango.register(Article, ArticleDocument)
