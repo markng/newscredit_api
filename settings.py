@@ -6,11 +6,11 @@ LOG_TO_FILE = False
 LOG_LEVEL = None
 PROJECT_PATH = os.path.abspath(os.path.split(__file__)[0])
 
-# If you set this to False, Django will make some optimizations so as 
+# If you set this to False, Django will make some optimizations so as
 # not to load the internationalization machinery.
 USE_I18N = True
 
-# List of callables that know how to import templates from various 
+# List of callables that know how to import templates from various
 # sources.
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.load_template_source',
@@ -41,7 +41,7 @@ INSTALLED_APPS = (
 )
 
 TEMPLATE_DIRS = (
-    # Put strings here, like "/home/html/django_templates" or 
+    # Put strings here, like "/home/html/django_templates" or
     # "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
@@ -51,8 +51,10 @@ TEMPLATE_DIRS = (
 SEARCH_FACET_PARAMS = [
     ("facet", "true"),             # basic faceting
     ("facet.field", "author"),
-    ("facet.field", "tags"),    
+    ("facet.field", "tags"),
     ("facet.field", "people"),
+    ("facet.field", "organisations"),
+    ("facet.field", "places"),
 ]
 
 SEARCH_SORT_PARAMS = {
